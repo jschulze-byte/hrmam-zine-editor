@@ -136,7 +136,7 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
 
 <div class="bar">
   <div class="bar-in">
-    <div class="brand"><span class="dot" id="dot" title="Automatisch opgeslagen in deze browser"></span> HRMAM-zine editor <small style="font-weight:400;color:#aaa">v29-10 #3</small> <small id="savedTxt">opgeslagen</small></div>
+    <div class="brand"><span class="dot" id="dot" title="Automatisch opgeslagen in deze browser"></span> HRMAM-zine editor <small style="font-weight:400;color:#aaa">v29-10 #4</small> <small id="savedTxt">opgeslagen</small></div>
     <button class="primary" id="verSaveBtn" title="Sla deze editie op als nieuwe versie (Ctrl+S)">💾 Opslaan als versie</button>
     <button id="verListBtn" title="Alle opgeslagen versies">🗂 Versies</button>
     <button id="undoBtn" title="Ongedaan maken (Ctrl+Z)">↶ Ongedaan</button>
@@ -661,12 +661,13 @@ function mailTable(){
   const row=(bg,pad,inner)=>`<tr><td bgcolor="${bg}" style="background: ${bg}; background-color: ${bg};" align="left" valign="top"><table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${bg}" style="width: 100%; background: ${bg}; background-color: ${bg}; border-collapse: collapse;"><tr><td bgcolor="${bg}" style="background: ${bg}; background-color: ${bg}; padding: ${pad};" align="left" valign="top">${inner}</td></tr></table></td></tr>`;
   const toc=(L,lang)=>{ let h=`<table width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; border-collapse: collapse;">`;
     for(let i=0;i<L.length;i+=3){ h+="<tr>"; for(let j=i;j<i+3;j++){ const a=L[j];
-      h+=`<td width="33%" valign="top" align="left" style="width: 33%; padding: 0 8px 4px 0; ${txt(16,"#007ab8",28)}">${a?`<a href="#${lang}-artikel-${j+1}" style="${txt(16,"#007ab8",28)} text-decoration: none;">${esc(a.toc)}</a>`:"&nbsp;"}</td>` } h+="</tr>" }
+      h+=`<td width="33%" valign="top" align="left" style="width: 33%; padding: 0 8px 4px 0; ${txt(16,"#007ab8",28)}">${a?`<a href="#${lang}-artikel-${j+1}" style="${txt(16,"#007ab8",28)} text-decoration: none;"><font color="#007ab8"><span style="${txt(16,"#007ab8",28)} text-decoration: none;">${esc(a.toc)}</span></font></a>`:"&nbsp;"}</td>` } h+="</tr>" }
     return h+"</table>" };
   // preheader in wit (zelfde kleur als de achtergrond): de inbox toont hem als voorbeeldtekst, de lezer ziet hem niet
-  const pre=lang=>lang==="nl"&&S.preheader ? `<span style="${OF} font-size: 1px; line-height: 1px; color: #FFFFFF;">${esc(S.preheader)}${"&nbsp;&zwnj;".repeat(60)}</span>` : "";
+  // #FEFEFE i.p.v. #FFFFFF: Outlook maakt zuiver wit bij plakken "automatisch" (= zwart)
+  const pre=lang=>lang==="nl"&&S.preheader ? `<font color="#FEFEFE" size="1" style="${OF} font-size: 1px; line-height: 1px; color: #FEFEFE;"><span style="${OF} font-size: 1px; line-height: 1px; color: #FEFEFE; mso-color-alt: #FEFEFE;">${esc(S.preheader)}${"&nbsp;&zwnj;".repeat(60)}</span></font>` : "";
   const top=lang=>`<table width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; border-collapse: collapse;"><tr>
-    <td align="left" valign="top" style="${OF} font-size: 1px; line-height: 1px; color: #FFFFFF; padding: 0;">${pre(lang)||"&nbsp;"}</td>
+    <td align="left" valign="top" bgcolor="#FFFFFF" style="${OF} font-size: 1px; line-height: 1px; color: #FEFEFE; background-color: #FFFFFF; padding: 0;">${pre(lang)||"&nbsp;"}</td>
     ${onlineUrl()?`<td align="right" valign="top" style="${txt(12,"#777777",16)} padding: 0 0 0 12px; white-space: nowrap;"><a href="${esc(onlineUrl())}" target="_blank" style="${txt(12,"#777777",16)} text-decoration: none; white-space: nowrap;">${lang==="nl"?"Online versie":"Online version"} &#8250;</a></td>`:""}</tr></table>`;
   const head=`<a href="${esc(S.logoUrl||"https://vu.nl")}" target="_blank"><img src="${LOGO}" alt="logo Vrije Universiteit Amsterdam" height="54" border="0" style="height: 54px; display: block;"></a>`;
   const art=(a,lang,i)=>row(a.bg,"25px 20px 10px 20px",
