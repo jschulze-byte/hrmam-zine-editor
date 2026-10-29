@@ -136,7 +136,7 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
 
 <div class="bar">
   <div class="bar-in">
-    <div class="brand"><span class="dot" id="dot" title="Automatisch opgeslagen in deze browser"></span> HRMAM-zine editor <small id="savedTxt">opgeslagen</small></div>
+    <div class="brand"><span class="dot" id="dot" title="Automatisch opgeslagen in deze browser"></span> HRMAM-zine editor <small style="font-weight:400;color:#aaa">v29-10 #3</small> <small id="savedTxt">opgeslagen</small></div>
     <button class="primary" id="verSaveBtn" title="Sla deze editie op als nieuwe versie (Ctrl+S)">💾 Opslaan als versie</button>
     <button id="verListBtn" title="Alle opgeslagen versies">🗂 Versies</button>
     <button id="undoBtn" title="Ongedaan maken (Ctrl+Z)">↶ Ongedaan</button>
@@ -146,7 +146,8 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
     <button id="dlBtn" title="Download als HTML-bestand (ook weer te openen in deze editor)">⬇︎ HTML</button>
     <button id="srcBtn" title="Kopieer de HTML-broncode (voor mailtool)">&lt;/&gt; Broncode</button>
     <button id="openBtn" title="Open een eerder gedownloade editie">📂 Open</button>
-    <button id="newBtn" class="ghost" title="Start een lege editie">＋ Nieuw</button>
+    <button id="newBtn" title="Kies een template voor een nieuwe editie">🧩 Template kiezen</button>
+    <button id="tplSaveTop" title="Sla de huidige editie op als template">📌 Opslaan als template</button>
     <button id="linksBtn" title="Overzicht en controle van alle links">🔗 Links checken</button>
     <button id="resetBtn" class="ghost" title="Zet de september 2026-editie terug">↺ Voorbeeld</button>
     <input type="file" id="fileIn" accept=".html,.htm" hidden>
@@ -183,7 +184,7 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
 </div>
 
 <dialog id="tplDlg" style="width:min(720px,94vw)"><form method="dialog" class="dlg">
-  <h2>Nieuwe editie — kies een template</h2>
+  <h2>Template kiezen</h2>
   <div class="sum">Een template bevat de vaste onderdelen voor een doelgroep: titel, preheader, intro, footer, vaste rubrieken en taal. Je huidige editie blijft bewaard via ↶ Ongedaan en 🗂 Versies.</div>
   <div id="tplList" class="tplgrid"></div>
   <div class="act" style="justify-content:space-between;flex-wrap:wrap">
@@ -831,6 +832,7 @@ $("#tplSave").onclick=async()=>{
   await setTpls(ex?l.map(x=>x.id===ex.id?t:x):[...l,t]); S.template=t.name; save(); $("#tplName").textContent="Template: "+t.name;
   toast(`Template “${t.name}” opgeslagen`); showTpls();
 };
+$("#tplSaveTop").onclick=()=>$("#tplSave").click();
 $("#tplImp").onclick=()=>$("#tplFile").click();
 $("#tplFile").onchange=async e=>{
   const f=e.target.files[0]; e.target.value=""; if(!f) return;
