@@ -47,7 +47,7 @@ svg{flex:none}
 .app{display:flex;align-items:flex-start}
 .side{flex:0 0 244px;position:sticky;top:var(--hdr);height:calc(100vh - var(--hdr));overflow:auto;background:var(--panel);border-right:1px solid var(--line);padding:18px 12px 24px;display:flex;flex-direction:column;gap:20px}
 .grp{display:flex;flex-direction:column;gap:2px}
-.grp h4{margin:0 0 6px;padding:0 12px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.grp h4{margin:0 4px 8px;padding:0 8px 8px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);border-bottom:1px solid #D5DBE1}
 .nb{display:flex;align-items:center;gap:10px;width:100%;min-height:38px;padding:0 12px;border:0;background:transparent;border-radius:8px;font-size:14px;font-weight:500;color:var(--ink2);text-align:left}
 .nb:hover{background:#F1F4F7}
 .nb.on{background:var(--accent-soft);color:var(--accent-dark)}
@@ -58,7 +58,9 @@ svg{flex:none}
 .panel{flex:0 0 312px;position:sticky;top:var(--hdr);height:calc(100vh - var(--hdr));overflow:auto;background:var(--panel);border-left:1px solid var(--line);padding:18px 18px 28px;display:flex;flex-direction:column;gap:20px}
 .panel h2{margin:0;font-size:16px;font-weight:600}
 .ctx{font-size:12px;color:var(--mute)}
-.pt{margin:0 0 8px;font-size:12px;font-weight:600;color:var(--mute)}
+.pt{margin:0 0 10px;padding-bottom:8px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);border-bottom:1px solid #D5DBE1}
+.pt.sub{border-bottom:0;padding-bottom:0;margin-bottom:8px;letter-spacing:0;text-transform:none;font-size:12px}
+.panel h2{padding-bottom:4px}
 .btns{display:flex;gap:8px;flex-wrap:wrap}
 .panel input[type=text],.panel input[type=url]{width:100%;height:40px;border:1px solid var(--line2);border-radius:9px;padding:0 10px;font:13px Inter,system-ui,sans-serif;color:var(--ink2)}
 .hint{font-size:12px;color:var(--mute);line-height:1.45}
@@ -190,7 +192,7 @@ dialog::backdrop{background:rgba(16,24,40,.4)}
   <div class="logo" aria-hidden="true">Z</div>
   <div class="ttl">
     <b id="hTitle">HRMAM-zine</b>
-    <small><span class="dot" id="dot"></span><span id="savedTxt">opgeslagen</span><span class="ver">editor v30-10 #7</span></small>
+    <small><span class="dot" id="dot"></span><span id="savedTxt">opgeslagen</span><span class="ver">editor v30-10 #8</span></small>
   </div>
   <div class="sp"></div>
   <button class="tool icon" id="undoBtn" type="button" aria-label="Ongedaan maken (Ctrl+Z)" title="Ongedaan maken (Ctrl+Z)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 010 10h-3"/></svg></button>
@@ -229,7 +231,8 @@ dialog::backdrop{background:rgba(16,24,40,.4)}
     <div class="grp">
       <h4>Controleren</h4>
       <button class="nb" type="button" id="linksBtn">Links checken <span class="badge" id="lkBadge"></span></button>
-      <button class="nb" type="button" id="mobBtn">Voorbeeld mobiel</button>
+      <button class="nb on" type="button" id="deskBtn" aria-pressed="true">Voorbeeld desktop</button>
+      <button class="nb" type="button" id="mobBtn" aria-pressed="false">Voorbeeld mobiel</button>
     </div>
     <div class="grp">
       <h4>Exporteren</h4>
@@ -258,6 +261,9 @@ dialog::backdrop{background:rgba(16,24,40,.4)}
         <label class="tg"><input type="checkbox" id="mEN"><span class="track"></span>Engelse versie opnemen <span class="small" id="tplName" style="margin-left:auto"></span></label>
       </div>
     </details>
+    <div id="viewBar" style="display:none;max-width:390px;margin:0 auto 10px;align-items:center;gap:10px;padding:8px 8px 8px 14px;background:var(--accent-soft);border-radius:10px;font-size:13px;color:var(--accent-dark)">
+      Mobiele weergave (390 px) <button class="tool" type="button" id="viewBack" style="margin-left:auto;height:34px">Terug naar desktop</button>
+    </div>
     <div id="canvas"></div>
   </main>
 
@@ -267,13 +273,14 @@ dialog::backdrop{background:rgba(16,24,40,.4)}
       <div class="ctx" id="ctx">Klik in een tekst om te beginnen</div>
     </div>
     <div id="pText">
-      <p class="pt">Stijl</p>
+      <p class="pt">Tekst</p>
+      <p class="pt sub">Stijl</p>
       <div class="btns">
         <button class="tool" type="button" data-act="p">Alinea</button>
         <button class="tool" type="button" data-act="h3">Tussenkop</button>
         <button class="tool" type="button" data-cmd="insertUnorderedList">Opsomming</button>
       </div>
-      <p class="pt" style="margin-top:16px">Nadruk</p>
+      <p class="pt sub" style="margin-top:14px">Nadruk</p>
       <div class="btns">
         <button class="tool" type="button" data-cmd="bold" aria-label="Vet" style="font-weight:700">B</button>
         <button class="tool" type="button" data-cmd="italic" aria-label="Cursief" style="font-style:italic">I</button>
@@ -599,7 +606,16 @@ let mobile=false;
 $("#goNL").onclick=()=>$("#secNL").scrollIntoView({behavior:"smooth",block:"start"});
 $("#goEN").onclick=()=>{ const s=$("#secEN"); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}) };
 $("#addNL").onclick=()=>addArticle("nl");
-$("#mobBtn").onclick=()=>{ mobile=!mobile; $("#mobBtn").classList.toggle("on",mobile); $(".mail").classList.toggle("mobile",mobile); toast(mobile?"Voorbeeld op telefoonbreedte":"Terug naar normale breedte") };
+function setView(m){
+  mobile=m;
+  $("#mobBtn").classList.toggle("on",m); $("#deskBtn").classList.toggle("on",!m);
+  $("#mobBtn").setAttribute("aria-pressed",String(m)); $("#deskBtn").setAttribute("aria-pressed",String(!m));
+  const mail=$(".mail"); if(mail) mail.classList.toggle("mobile",m);
+  $("#viewBar").style.display=m?"flex":"none";
+}
+$("#mobBtn").onclick=()=>setView(true);
+$("#deskBtn").onclick=()=>setView(false);
+$("#viewBack").onclick=()=>setView(false);
 
 /* ================= opmaakpaneel ================= */
 let lastRange=null;
