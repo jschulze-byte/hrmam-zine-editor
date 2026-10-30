@@ -120,6 +120,9 @@ svg{flex:none}
 .b img[align=left]{float:left;margin:5px 15px 10px 0}
 .b img[align=right]{float:right;margin:5px 0 10px 15px}
 .b img:not([align]){display:block;margin:0 auto 16px}
+.b img[data-credit]{margin-bottom:30px}
+.b img[data-credit]:not([align]){margin-bottom:34px}
+.capl{position:absolute;font:11px/14px Arial,sans-serif;color:#777;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .b img.sel{outline:3px solid var(--accent);outline-offset:2px}
 .b a.flash,.intro a.flash,.footer a.flash{background:#fff3b0;outline:2px solid #e0a100;border-radius:2px}
 .footer{max-width:650px;margin:0 auto;padding:25px;text-align:center;font-size:13px;line-height:18px;color:#333}
@@ -192,7 +195,7 @@ dialog::backdrop{background:rgba(16,24,40,.4)}
   <div class="logo" aria-hidden="true">Z</div>
   <div class="ttl">
     <b id="hTitle">HRMAM-zine</b>
-    <small><span class="dot" id="dot"></span><span id="savedTxt">opgeslagen</span><span class="ver">editor v30-10 #8</span></small>
+    <small><span class="dot" id="dot"></span><span id="savedTxt">opgeslagen</span><span class="ver">editor v30-10 #10</span></small>
   </div>
   <div class="sp"></div>
   <button class="tool icon" id="undoBtn" type="button" aria-label="Ongedaan maken (Ctrl+Z)" title="Ongedaan maken (Ctrl+Z)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 010 10h-3"/></svg></button>
@@ -308,7 +311,9 @@ dialog::backdrop{background:rgba(16,24,40,.4)}
           <button class="tool" type="button" data-i="right">Rechts</button>
           <button class="tool" type="button" data-i="full">Breed</button>
         </div>
-        <div class="btns" style="margin-top:8px">
+        <label for="imgCr" class="small" style="display:block;margin-top:12px">Bijschrift / bron</label>
+        <input id="imgCr" type="text" placeholder="bijv. Foto: Jan Boom  of  Tekening: Jan Boom" style="margin-top:6px">
+        <div class="btns" style="margin-top:10px">
           <button class="tool icon" type="button" data-i="smaller" aria-label="Kleiner">−</button>
           <button class="tool icon" type="button" data-i="bigger" aria-label="Groter">+</button>
           <button class="tool icon" type="button" data-i="up" aria-label="Alinea omhoog">↑</button>
@@ -366,6 +371,7 @@ dialog::backdrop{background:rgba(16,24,40,.4)}
   <div class="drop" id="drop"></div>
   <input type="file" id="imgFile" accept="image/*" hidden>
   <div><div class="small" style="margin-bottom:6px">…of plak een link naar een online foto</div><input type="url" id="imgUrl" placeholder="https://…"></div>
+  <div><label class="small" for="imgCredit" style="display:block;margin-bottom:6px">Bijschrift / bron (optioneel) — staat precies zo klein onder de foto</label><input type="text" id="imgCredit" style="font:inherit;height:40px;padding:0 10px;border:1px solid var(--line2);border-radius:9px;width:100%" placeholder="bijv. Foto: Jan Boom  of  Tekening: Jan Boom"></div>
   <div><div class="small" style="margin-bottom:6px">Plaatsing</div>
     <div class="seg" id="pos"><button class="tool on" type="button" data-p="left">Links + tekst</button><button class="tool" type="button" data-p="right">Rechts + tekst</button><button class="tool" type="button" data-p="full">Volle breedte</button></div></div>
   <div class="row"><span class="small">Breedte</span><input type="range" id="imgW" min="120" max="610" step="10" value="250"><span id="imgWv" class="small">250 px</span></div>
@@ -461,7 +467,7 @@ document.addEventListener("keydown",e=>{
 },true);
 
 /* ================= paste sanitizer ================= */
-const ALLOWED = {P:[],BR:[],STRONG:[],B:[],EM:[],I:[],A:["href"],H3:[],UL:[],OL:[],LI:[],IMG:["src","alt","align","width"]};
+const ALLOWED = {P:[],BR:[],STRONG:[],B:[],EM:[],I:[],A:["href"],H3:[],UL:[],OL:[],LI:[],IMG:["src","alt","align","width","data-credit"]};
 function clean(html){
   const doc = new DOMParser().parseFromString(html,"text/html");
   const walk = (node,out)=>{
@@ -531,6 +537,7 @@ function render(){
   h+=`</div>`;
   $("#canvas").innerHTML=h;
   sidebar(); panelArt(); preCount(); setSummary(); status();
+  requestAnimationFrame(caps); $$("#canvas .b img").forEach(im=>{ if(!im.complete) im.addEventListener("load",caps,{once:true}) });
 }
 function sidebar(){
   $("#cntNL").textContent=S.nl.length;
@@ -551,7 +558,7 @@ function sync(t){
     else if(t.dataset.g==="enLabel") S.enLabel=t.innerText.trim();
     else S[t.dataset.g]=t.innerHTML;
   }
-  save();
+  save(); if(t.dataset.f==="body") requestAnimationFrame(caps);
 }
 function setActive(art){
   const nw=art?{lang:art.dataset.lang,i:+art.dataset.i}:null;
@@ -712,10 +719,28 @@ function selectImg(im){
   const art=im.closest(".art"); if(art) setActive(art);
   $("#imgCtl").classList.remove("dis");
   $("#imgLab").textContent="Geselecteerde foto · "+(im.getAttribute("width")||"?")+" px breed";
+  if(document.activeElement!==$("#imgCr")) $("#imgCr").value=im.getAttribute("data-credit")||"";
   $$("#imgCtl [data-i]").forEach(x=>x.classList.toggle("on", x.dataset.i===(im.getAttribute("align")||"full")));
 }
-function clearImg(){ if(selImg){ selImg.classList.remove("sel"); if(!selImg.className) selImg.removeAttribute("class") } selImg=null; $("#imgCtl").classList.add("dis"); $("#imgLab").textContent="Klik op een foto om hem aan te passen"; $$("#imgCtl [data-i]").forEach(x=>x.classList.remove("on")) }
+function clearImg(){ if(selImg){ selImg.classList.remove("sel"); if(!selImg.className) selImg.removeAttribute("class") } selImg=null; $("#imgCtl").classList.add("dis"); $("#imgLab").textContent="Klik op een foto om hem aan te passen"; $$("#imgCtl [data-i]").forEach(x=>x.classList.remove("on")); $("#imgCr").value="" }
 document.addEventListener("mousedown",e=>{ if(!e.target.closest("#panel") && !e.target.closest(".b img") && !e.target.closest("dialog")) clearImg() });
+$("#imgCr").addEventListener("beforeinput",()=>snapTyping());
+$("#imgCr").addEventListener("input",e=>{ if(!selImg) return; const v=e.target.value.trim(); if(v) selImg.setAttribute("data-credit",v); else selImg.removeAttribute("data-credit"); sync(selImg.closest(".b")); caps() });
+// bijschriften in de editor tonen (losse laag, geen onderdeel van de bewerkbare tekst)
+const crText=v=>String(v||"").trim();   // bijschrift precies zoals ingevuld, zonder voorvoegsel
+function caps(){
+  $$(".capl").forEach(x=>x.remove());
+  $$(".art").forEach(art=>{
+    const ar=art.getBoundingClientRect(), en=art.dataset.lang==="en";
+    art.querySelectorAll(".b img[data-credit]").forEach(im=>{
+      const r=im.getBoundingClientRect(), c=document.createElement("div");
+      c.className="capl"; c.textContent=crText(im.getAttribute("data-credit"),en?"en":"nl");
+      c.style.left=(r.left-ar.left)+"px"; c.style.top=(r.bottom-ar.top+5)+"px"; c.style.width=r.width+"px";
+      art.appendChild(c);
+    });
+  });
+}
+addEventListener("resize",()=>caps());
 $("#imgCtl").addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b||!selImg) return;
   const im=selImg, body=im.closest(".b"), act=b.dataset.i; snap();
@@ -748,7 +773,7 @@ $("#imgAdd").onclick=()=>{
   }
   openImgDlg();
 };
-function openImgDlg(){ pendingSrc=null; $("#imgUrl").value=""; drop.innerHTML=DROP_TXT; setPos(pos); dlg.showModal() }
+function openImgDlg(){ pendingSrc=null; $("#imgUrl").value=""; $("#imgCredit").value=""; drop.innerHTML=DROP_TXT; setPos(pos); dlg.showModal() }
 function setPos(p){ pos=p; $$("#pos button").forEach(x=>x.classList.toggle("on",x.dataset.p===p));
   const w=$("#imgW"); if(p==="full"){ w.value=FULLW } else if(+w.value>=FULLW){ w.value=250 } $("#imgWv").textContent=w.value+" px" }
 $("#pos").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setPos(b.dataset.p) });
@@ -776,8 +801,8 @@ dlg.addEventListener("close",()=>{
   if(!src){ toast("Geen foto gekozen"); return }
   restore(); const body=lastRange && editableOf(lastRange.startContainer); if(!body) return;
   snap();
-  const w=$("#imgW").value, al=pos==="full"?"":` align="${pos}"`;
-  document.execCommand("insertHTML",false,`<img src="${esc(src)}" alt="" width="${w}"${al}>`);
+  const w=$("#imgW").value, al=pos==="full"?"":` align="${pos}"`, cr=$("#imgCredit").value.trim();
+  document.execCommand("insertHTML",false,`<img src="${esc(src)}" alt="" width="${w}"${al}${cr?` data-credit="${esc(cr)}"`:""}>`);
   sync(body);
   const im=[...body.querySelectorAll("img")].find(x=>x.getAttribute("src")===src); if(im) setTimeout(()=>selectImg(im),50);
   toast("Foto geplaatst — klik erop om hem aan te passen");
@@ -807,7 +832,7 @@ const OF="font-family: Arial, Helvetica, sans-serif;";
 function txt(size,color,lh,extra=""){ return `${OF} font-size: ${size}px; color: ${color}; line-height: ${lh}px; mso-line-height-rule: exactly; ${extra}` }
 const slug=t=>(t||"hrmam-zine").normalize("NFKD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const onlineUrl=()=>S.onlineUrl||"";
-function mailBody(html,color){
+function mailBody(html,color,lang){
   const d=document.createElement("div"); d.innerHTML=html;
   d.querySelectorAll("[contenteditable]").forEach(x=>x.removeAttribute("contenteditable"));
   d.querySelectorAll("span").forEach(x=>x.removeAttribute("style"));
@@ -819,8 +844,9 @@ function mailBody(html,color){
   d.querySelectorAll("strong,b").forEach(x=>x.setAttribute("style","font-weight: bold;"));
   d.querySelectorAll("a").forEach(a=>{a.setAttribute("style",`${OF} color: ${color}; text-decoration: underline;`); a.setAttribute("target","_blank")});
   d.querySelectorAll("img").forEach(i=>{
-    const w=Math.min(FULLW,+i.getAttribute("width")||250), al=i.getAttribute("align");
+    const w=Math.min(FULLW,+i.getAttribute("width")||250), al=i.getAttribute("align"), cr=(i.getAttribute("data-credit")||"").trim();
     [...i.attributes].forEach(at=>{ if(!/^(src|alt|width)$/.test(at.name)) i.removeAttribute(at.name) });
+    if(cr && !i.getAttribute("alt")) i.setAttribute("alt",crText(cr,lang));
     i.setAttribute("width",w); i.setAttribute("border","0");
     i.setAttribute("style",`display: block; width: ${w}px; max-width: 100%; height: auto; border: 0;`);
     let node=i; while(node.parentElement && node.parentElement!==d && /^(A|SPAN|STRONG|B|EM|I)$/.test(node.parentElement.tagName)) node=node.parentElement;
@@ -834,6 +860,7 @@ function mailBody(html,color){
     const td=t.insertRow().insertCell(); td.setAttribute("valign","top"); td.setAttribute("style",pad); if(!al) td.setAttribute("align","center");
     if(block){ block.before(t); td.appendChild(node); if(!block.textContent.trim() && !block.querySelector("img")) block.remove() }
     else { node.replaceWith(t); td.appendChild(node) }
+    if(cr){ td.setAttribute("width",w); const c=document.createElement("p"); c.setAttribute("style",txt(11,"#777777",15,`margin: 5px 0 0 0; width: ${w}px; max-width: 100%;`+(al?"":" text-align: left;"))); c.textContent=crText(cr,lang); td.appendChild(c) }
   });
   return d.innerHTML;
 }
@@ -850,7 +877,7 @@ function mailTable(){
     ${onlineUrl()?`<td align="right" valign="top" style="${txt(12,"#777777",16)} padding: 0 0 0 12px; white-space: nowrap;"><a href="${esc(onlineUrl())}" target="_blank" style="${txt(12,"#777777",16)} text-decoration: none; white-space: nowrap;">${lang==="nl"?"Online versie":"Online version"} &#8250;</a></td>`:""}</tr></table>`;
   const head=`<a href="${esc(S.logoUrl||"https://vu.nl")}" target="_blank"><img src="${LOGO}" alt="logo Vrije Universiteit Amsterdam" height="54" border="0" style="height: 54px; display: block;"></a>`;
   const art=(a,lang,i)=>row(a.bg,"25px 20px 10px 20px",
-    `<p style="${txt(28,a.color,40,"margin: 0 0 24px 0; font-weight: normal;")}"><a name="${lang}-artikel-${i+1}" id="${lang}-artikel-${i+1}" style="${txt(28,a.color,40)} text-decoration: none;">${esc(a.title)}</a></p>${mailBody(a.body,a.color)}<div style="clear: both; font-size: 0; line-height: 0;">&nbsp;</div>`);
+    `<p style="${txt(28,a.color,40,"margin: 0 0 24px 0; font-weight: normal;")}"><a name="${lang}-artikel-${i+1}" id="${lang}-artikel-${i+1}" style="${txt(28,a.color,40)} text-decoration: none;">${esc(a.title)}</a></p>${mailBody(a.body,a.color,lang)}<div style="clear: both; font-size: 0; line-height: 0;">&nbsp;</div>`);
   const foot=t=>row("#F2EFED","25px 25px",`<p style="${txt(13,"#333333",18,"margin: 0; text-align: center;")}">${t.replace(/<a /g,`<a style="${OF} color: #0000EE; text-decoration: underline;" `)}</p>`);
   const en=S.showEN!==false;
   let intro=stripEnBelow(S.introNL).replace(/<p[^>]*>/g,`<p style="${txt(16,"#333333",26,"margin: 0;")}">`).replace(/<strong>/g,'<strong style="font-weight: bold;">');
