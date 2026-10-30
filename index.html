@@ -4,52 +4,110 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HRMAM-zine editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ui-bg:#f2efed; --ui-panel:#ffffff; --ui-ink:#222; --ui-mute:#6b6b6b; --ui-line:#e2ddd9;
-  --ui-accent:#0077B3; --ui-accent-ink:#fff; --ui-danger:#CC4100;
+  --bg:#EEF1F4; --panel:#FFFFFF; --ink:#1F2933; --ink2:#2B3440; --mute:#5B6673; --line:#E1E6EB; --line2:#DCE2E8;
+  --accent:#0077B3; --accent-dark:#005A8C; --accent-soft:#E6F1F8; --ok:#1E7A46; --warn:#B45309; --danger:#B42318;
+  --hdr:64px;
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--ui-bg);color:var(--ui-ink);font-family:Arial, Helvetica, sans-serif}
-/* ---------- UI chrome ---------- */
-.bar{position:sticky;top:0;z-index:50;background:var(--ui-panel);border-bottom:1px solid var(--ui-line);box-shadow:0 2px 8px rgba(0,0,0,.04)}
-.bar-in{max-width:1100px;margin:0 auto;padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.brand{font-weight:700;font-size:15px;margin-right:auto;display:flex;align-items:center;gap:8px}
-.brand small{font-weight:400;color:var(--ui-mute)}
-.dot{width:10px;height:10px;border-radius:50%;background:#2a9d5c;display:inline-block}
-.dot.dirty{background:#e0a100}
-button{font:inherit;font-size:13px;border:1px solid var(--ui-line);background:#fff;color:var(--ui-ink);padding:7px 11px;border-radius:7px;cursor:pointer;white-space:nowrap}
-button:hover{border-color:#bbb}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+button{font:inherit;cursor:pointer}
 button:disabled{opacity:.4;cursor:default}
-button.primary{background:var(--ui-accent);color:var(--ui-accent-ink);border-color:var(--ui-accent)}
-button.ghost{background:transparent}
-.fmt{border-top:1px solid var(--ui-line)}
-.fmt .bar-in{padding:6px 16px}
-.fmt button{padding:5px 9px;font-size:12px}
-.fmt .hint{font-size:12px;color:var(--ui-mute);margin-left:auto}
-.meta{max-width:690px;margin:18px auto 0;padding:0 16px;display:grid;grid-template-columns:1fr;gap:10px}
-.meta label{font-size:12px;color:var(--ui-mute);display:flex;flex-direction:column;gap:4px}
-.topline{display:flex;justify-content:space-between;gap:12px;padding:8px 20px 0;font-size:12px;line-height:16px;color:#777}
-.topline a{color:#777;text-decoration:none;white-space:nowrap}
-.meta input{font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--ui-line);border-radius:7px;background:#fff}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;background:#222;color:#fff;padding:10px 16px;border-radius:8px;font-size:14px;transition:.25s;z-index:200;pointer-events:none;max-width:90vw;text-align:center}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.en-label{color:#555;cursor:text}
-.sec-label{max-width:650px;margin:28px auto 6px;padding:0 4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ui-mute)}
-.add{display:block;width:100%;max-width:650px;margin:0 auto;border:2px dashed #cfc8c2;background:transparent;color:var(--ui-mute);padding:14px;border-radius:0}
-.add:hover{border-color:var(--ui-accent);color:var(--ui-accent)}
-/* ---------- email canvas (mirrors the mail) ---------- */
-.mail{padding:30px 10px 60px;font-family:Arial, sans-serif;font-size:16px;color:#333;line-height:26px}
+svg{flex:none}
+
+/* ---------- header ---------- */
+.top{position:sticky;top:0;z-index:50;height:var(--hdr);display:flex;align-items:center;gap:12px;padding:0 20px;background:var(--panel);border-bottom:1px solid var(--line)}
+.logo{width:34px;height:34px;border-radius:9px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
+.ttl{display:flex;flex-direction:column;min-width:0}
+.ttl b{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:42vw}
+.ttl small{font-size:12px;color:var(--mute);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);display:inline-block}
+.dot.dirty{background:#E0A100}
+.ver{font-size:11px;color:#9AA4AE;margin-left:6px}
+.sp{flex:1 1 auto}
+.tool{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:40px;height:40px;padding:0 12px;border:1px solid var(--line2);border-radius:9px;background:#fff;font-weight:500;font-size:13px;color:var(--ink2);white-space:nowrap}
+.tool:hover:not(:disabled){border-color:#B9C2CC;background:#FAFBFC}
+.tool.icon{padding:0;width:40px}
+.tool.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.tool.primary:hover:not(:disabled){background:var(--accent-dark);border-color:var(--accent-dark)}
+.tool.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.tool.wide{width:100%}
+.menuwrap{position:relative}
+.menu{position:absolute;right:0;top:calc(100% + 6px);width:290px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 34px rgba(16,24,40,.18);padding:6px;display:none;z-index:60}
+.menu.open{display:block}
+.mi{display:flex;align-items:center;gap:10px;width:100%;min-height:42px;padding:0 12px;border:0;background:transparent;border-radius:8px;font-size:14px;font-weight:500;color:var(--ink);text-align:left}
+.mi:hover{background:#F1F4F7}
+.mi small{margin-left:auto;font-size:12px;color:var(--mute);font-weight:400}
+.msep{height:1px;background:var(--line);margin:6px 4px}
+
+/* ---------- layout ---------- */
+.app{display:flex;align-items:flex-start}
+.side{flex:0 0 244px;position:sticky;top:var(--hdr);height:calc(100vh - var(--hdr));overflow:auto;background:var(--panel);border-right:1px solid var(--line);padding:18px 12px 24px;display:flex;flex-direction:column;gap:20px}
+.grp{display:flex;flex-direction:column;gap:2px}
+.grp h4{margin:0 0 6px;padding:0 12px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.nb{display:flex;align-items:center;gap:10px;width:100%;min-height:38px;padding:0 12px;border:0;background:transparent;border-radius:8px;font-size:14px;font-weight:500;color:var(--ink2);text-align:left}
+.nb:hover{background:#F1F4F7}
+.nb.on{background:var(--accent-soft);color:var(--accent-dark)}
+.nb .badge{margin-left:auto;font-size:12px;font-weight:600;color:var(--ok)}
+.nb .badge.bad{color:var(--warn)}
+.nb.sub{font-size:13px;color:var(--mute)}
+.center{flex:1 1 auto;min-width:0;padding:22px 24px 80px}
+.panel{flex:0 0 312px;position:sticky;top:var(--hdr);height:calc(100vh - var(--hdr));overflow:auto;background:var(--panel);border-left:1px solid var(--line);padding:18px 18px 28px;display:flex;flex-direction:column;gap:20px}
+.panel h2{margin:0;font-size:16px;font-weight:600}
+.ctx{font-size:12px;color:var(--mute)}
+.pt{margin:0 0 8px;font-size:12px;font-weight:600;color:var(--mute)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.panel input[type=text],.panel input[type=url]{width:100%;height:40px;border:1px solid var(--line2);border-radius:9px;padding:0 10px;font:13px Inter,system-ui,sans-serif;color:var(--ink2)}
+.hint{font-size:12px;color:var(--mute);line-height:1.45}
+.warn{font-size:12px;color:var(--danger);font-weight:600}
+.okt{font-size:12px;color:var(--ok);font-weight:600}
+.dis{opacity:.45;pointer-events:none}
+.sw{width:26px;height:26px;border-radius:50%;border:0;padding:0}
+.sw.on{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--ink)}
+
+/* ---------- instellingen ---------- */
+.card{max-width:650px;margin:0 auto 18px;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+.card summary{list-style:none;display:flex;align-items:center;gap:10px;padding:14px 18px;cursor:pointer;font-weight:600;font-size:14px}
+.card summary::-webkit-details-marker{display:none}
+.card summary small{font-weight:400;color:var(--mute);font-size:12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.card summary .chev{margin-left:auto;transition:.15s}
+.card[open] summary .chev{transform:rotate(180deg)}
+.fields{padding:2px 18px 18px;display:grid;gap:14px}
+.f{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:500;color:var(--ink2)}
+.f .lab{display:flex;justify-content:space-between;gap:8px}
+.f input{height:42px;border:1px solid var(--line2);border-radius:10px;padding:0 12px;font:14px Inter,system-ui,sans-serif;color:var(--ink)}
+.f .hint{font-weight:400}
+.cnt{font-weight:600;color:var(--ok);white-space:nowrap}
+.cnt.over{color:var(--warn)}
+.tg{display:flex;align-items:center;gap:12px;min-height:44px;font-size:14px;font-weight:500;cursor:pointer}
+.tg input{position:absolute;opacity:0;width:1px;height:1px}
+.tg .track{width:44px;height:26px;border-radius:13px;background:#CBD2D9;position:relative;transition:.15s;flex:none}
+.tg .track::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.tg input:checked + .track{background:var(--accent)}
+.tg input:checked + .track::after{left:21px}
+.tg input:focus-visible + .track{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- mail canvas ---------- */
+.mail{font-family:Arial,sans-serif;font-size:16px;color:#333;line-height:26px;transition:max-width .2s}
 .mail strong,.mail b{font-weight:bold}
 .blk{max-width:650px;margin:0 auto;background:#fff;position:relative}
-.head{padding:15px 20px}
+.topline{display:flex;justify-content:space-between;gap:12px;padding:8px 20px 0;font-size:12px;line-height:16px;color:#777;min-height:24px}
+.topline .pre{font-family:Inter,system-ui,sans-serif;background:#F1F4F7;border-radius:5px;padding:1px 7px;color:var(--mute)}
+.topline a{color:#777;text-decoration:none;white-space:nowrap}
+.head{padding:10px 20px 15px}
 .head img{height:54px;display:block}
-.toc{padding:20px 20px;display:grid;grid-template-columns:repeat(3,1fr);column-gap:0}
+.toc{padding:20px 20px;display:grid;grid-template-columns:repeat(3,1fr)}
 .toc a{color:#007ab8;text-decoration:none;font-size:16px;line-height:28px;padding:0 8px 4px 0}
 .title{padding:40px 40px;font-size:38px;line-height:50px}
 .intro{background:#FAF7F5;padding:30px 20px 25px}
 .intro p{margin:0}
-.art{padding:25px 20px 10px;display:flow-root}
+.enb{margin:0;font-style:italic}
+.enb a{color:#333}
+.art{padding:25px 20px 10px;display:flow-root;cursor:default}
+.art.active{box-shadow:inset 0 0 0 2px var(--accent)}
 .art .h{font-size:28px;line-height:40px;color:var(--c);margin-bottom:24px}
 .art .b a{color:var(--c);text-decoration:underline}
 .art .b p{margin:0 0 16px}
@@ -60,137 +118,224 @@ button.ghost{background:transparent}
 .b img[align=left]{float:left;margin:5px 15px 10px 0}
 .b img[align=right]{float:right;margin:5px 0 10px 15px}
 .b img:not([align]){display:block;margin:0 auto 16px}
-.b img.sel{outline:3px solid var(--ui-accent);outline-offset:2px}
+.b img.sel{outline:3px solid var(--accent);outline-offset:2px}
+.b a.flash,.intro a.flash,.footer a.flash{background:#fff3b0;outline:2px solid #e0a100;border-radius:2px}
 .footer{max-width:650px;margin:0 auto;padding:25px;text-align:center;font-size:13px;line-height:18px;color:#333}
+.sec{max-width:650px;margin:30px auto 8px;padding:0 4px;font:600 12px Inter,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#555}
+.sec.ed{cursor:text}
+.add{display:block;width:100%;max-width:650px;margin:0 auto;border:2px dashed #C9D0D7;background:transparent;color:var(--mute);padding:14px;font:500 14px Inter,system-ui,sans-serif}
+.add:hover{border-color:var(--accent);color:var(--accent)}
 [contenteditable]{outline:none;border-radius:3px}
 [contenteditable]:hover{box-shadow:0 0 0 1px rgba(0,119,179,.35)}
 [contenteditable]:focus{box-shadow:0 0 0 2px rgba(0,119,179,.6)}
-/* article tools */
-.tools{position:absolute;right:-8px;top:-14px;display:flex;gap:4px;align-items:center;background:#fff;border:1px solid var(--ui-line);border-radius:8px;padding:4px 6px;box-shadow:0 2px 8px rgba(0,0,0,.08);opacity:0;transition:.15s;z-index:5;font-size:12px;line-height:1}
-.blk:hover .tools,.blk:focus-within .tools{opacity:1}
-.tools button{padding:4px 7px;font-size:12px;border-radius:5px}
-.tools input{font:inherit;font-size:12px;width:150px;padding:4px 6px;border:1px solid var(--ui-line);border-radius:5px}
-.sw{width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #ccc;cursor:pointer;padding:0}
-.sw.on{box-shadow:0 0 0 2px #222}
-.bgsw{width:18px;height:18px;border-radius:4px;border:1px solid #bbb;cursor:pointer;padding:0}
-.bgsw.on{outline:2px solid #222}
-.sep{width:1px;height:16px;background:var(--ui-line);margin:0 2px}
-/* image toolbar */
-#imgBar{position:absolute;z-index:60;display:none;gap:4px;background:#222;padding:5px;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
-#imgBar.show{display:flex}
-#imgBar button{background:#333;color:#fff;border-color:#444;padding:5px 8px;font-size:12px}
-#imgBar button.on{background:var(--ui-accent);border-color:var(--ui-accent)}
-#imgBar .del{background:var(--ui-danger);border-color:var(--ui-danger)}
-/* dialog */
-dialog{border:none;border-radius:12px;padding:0;width:min(460px,92vw);box-shadow:0 20px 50px rgba(0,0,0,.3)}
-dialog::backdrop{background:rgba(0,0,0,.35)}
-.dlg{padding:20px;display:flex;flex-direction:column;gap:14px;font-size:14px}
-.dlg h2{margin:0;font-size:17px}
-.drop{border:2px dashed #cfc8c2;border-radius:10px;padding:22px;text-align:center;color:var(--ui-mute);cursor:pointer;background:#faf9f8}
-.drop.over{border-color:var(--ui-accent);color:var(--ui-accent)}
+[contenteditable] a{cursor:text}
+.mail.mobile .blk,.mail.mobile .footer,.mail.mobile .sec,.mail.mobile .add{max-width:390px}
+.mail.mobile .toc{grid-template-columns:1fr 1fr}
+.mail.mobile .title{padding:28px 20px;font-size:30px;line-height:40px}
+
+/* ---------- dialogen ---------- */
+dialog{border:none;border-radius:14px;padding:0;width:min(480px,92vw);box-shadow:0 24px 60px rgba(16,24,40,.3);color:var(--ink)}
+dialog::backdrop{background:rgba(16,24,40,.4)}
+.dlg{padding:22px;display:flex;flex-direction:column;gap:14px;font-size:14px}
+.dlg h2{margin:0;font-size:18px;font-weight:600}
+.dlg .act{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.drop{border:2px dashed #C9D0D7;border-radius:12px;padding:22px;text-align:center;color:var(--mute);cursor:pointer;background:#FAFBFC}
+.drop.over{border-color:var(--accent);color:var(--accent)}
 .drop img{max-width:100%;max-height:160px;display:block;margin:0 auto}
-.dlg input[type=url]{font:inherit;padding:8px 10px;border:1px solid var(--ui-line);border-radius:7px;width:100%}
-.seg{display:flex;gap:6px}
-.seg button.on{background:var(--ui-accent);color:#fff;border-color:var(--ui-accent)}
+.dlg input[type=url]{font:inherit;height:40px;padding:0 10px;border:1px solid var(--line2);border-radius:9px;width:100%}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
 .row{display:flex;align-items:center;gap:10px}
 .row input[type=range]{flex:1}
-.dlg .act{display:flex;justify-content:flex-end;gap:8px}
-.small{font-size:12px;color:var(--ui-mute)}
-/* link toolbar */
-#linkBar{position:absolute;z-index:60;display:none;align-items:center;gap:6px;background:#fff;border:1px solid var(--ui-line);padding:5px 6px 5px 10px;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.15);font-size:12px;max-width:min(560px,94vw)}
-#linkBar.show{display:flex}
-#linkBar .url{color:var(--ui-accent);text-decoration:underline;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:330px;cursor:pointer}
-#linkBar .warn{color:var(--ui-danger);font-weight:bold;white-space:nowrap}
-#linkBar button{padding:4px 8px;font-size:12px;border-radius:5px}
-.b a.flash,.intro a.flash,.footer a.flash{background:#fff3b0;outline:2px solid #e0a100;border-radius:2px}
-[contenteditable] a{cursor:text}
-/* link overview */
-#linksDlg{width:min(820px,94vw)}
-.lk{max-height:65vh;overflow:auto;border:1px solid var(--ui-line);border-radius:8px}
+.small{font-size:12px;color:var(--mute)}
+.sum{font-size:13px;color:var(--mute)}
+#linksDlg,#verDlg{width:min(820px,94vw)}
+#tplDlg{width:min(740px,94vw)}
+.lk{max-height:62vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
 .lk table{width:100%;border-collapse:collapse;font-size:13px}
-.lk th{position:sticky;top:0;background:#faf9f8;text-align:left;font-weight:600;color:var(--ui-mute);padding:8px;border-bottom:1px solid var(--ui-line)}
-.lk td{padding:8px;border-bottom:1px solid var(--ui-line);vertical-align:top}
+.lk th{position:sticky;top:0;background:#FAFBFC;text-align:left;font-weight:600;color:var(--mute);padding:9px;border-bottom:1px solid var(--line)}
+.lk td{padding:9px;border-bottom:1px solid var(--line);vertical-align:top}
 .lk td.u{word-break:break-all}
-.lk td.u a{color:var(--ui-accent)}
-.lk .bad{color:var(--ui-danger);font-weight:bold;font-size:12px;margin-top:3px}
-.lk .ok{color:#2a9d5c;font-size:12px}
-.lk button{padding:3px 8px;font-size:12px}
-.sum{font-size:13px;color:var(--ui-mute)}
-.tplgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;max-height:55vh;overflow:auto}
-.tpl{border:1px solid var(--ui-line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px;background:#fff}
-.tpl:hover{border-color:var(--ui-accent)}
+.lk td.u a{color:var(--accent)}
+.lk .bad{color:var(--danger);font-weight:600;font-size:12px;margin-top:3px}
+.lk .tool{height:32px;font-size:12px;padding:0 10px;min-width:0}
+.tplgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;max-height:55vh;overflow:auto}
+.tpl{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px;background:#fff}
+.tpl:hover{border-color:var(--accent)}
 .tpl b{font-size:14px}
-.tpl .small{line-height:1.4}
-.tpl .dots{display:flex;gap:3px}
+.tpl .small{line-height:1.45}
+.tpl .dots{display:flex;gap:4px}
 .tpl .dots i{width:10px;height:10px;border-radius:50%;display:inline-block}
 .tpl .row2{display:flex;gap:6px;margin-top:auto;flex-wrap:wrap}
-.tpl .row2 button{padding:4px 8px;font-size:12px}
-@media (max-width:720px){
-  .tools{position:static;opacity:1;flex-wrap:wrap;border-radius:0;box-shadow:none;border-width:0 0 1px}
+.tpl .tool{height:34px;font-size:12px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;background:#1F2933;color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;transition:.25s;z-index:200;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (max-width:1100px){ .panel{flex-basis:270px} .side{flex-basis:210px} }
+@media (max-width:920px){
+  .app{flex-wrap:wrap}
+  .side,.panel{position:static;height:auto;flex:1 1 100%;border:0;border-bottom:1px solid var(--line)}
+  .side{flex-direction:row;flex-wrap:wrap}
+  .grp{flex:1 1 200px}
+  .center{padding:16px 10px 60px}
   .toc{grid-template-columns:1fr 1fr}
-  .title{padding:30px 20px;font-size:31px;line-height:42px}
-  .fmt .hint{display:none}
+  .title{padding:28px 20px;font-size:30px;line-height:40px}
+  .ttl b{max-width:40vw}
+  #undoBtn,#redoBtn{display:none}
 }
 </style>
 </head>
 <body>
 
-<div class="bar">
-  <div class="bar-in">
-    <div class="brand"><span class="dot" id="dot" title="Automatisch opgeslagen in deze browser"></span> HRMAM-zine editor <small style="font-weight:400;color:#aaa">v29-10 #5</small> <small id="savedTxt">opgeslagen</small></div>
-    <button class="primary" id="verSaveBtn" title="Sla deze editie op als nieuwe versie (Ctrl+S)">💾 Opslaan als versie</button>
-    <button id="verListBtn" title="Alle opgeslagen versies">🗂 Versies</button>
-    <button id="undoBtn" title="Ongedaan maken (Ctrl+Z)">↶ Ongedaan</button>
-    <button id="redoBtn" title="Opnieuw (Ctrl+Y)">↷ Opnieuw</button>
-    <button id="emlBtn" title="Download als Outlook-concept: dubbelklik en de mail opent met volledige opmaak">✉️ Open als Outlook-mail</button>
-    <button id="copyBtn" title="Kopieer de opgemaakte mail om in Outlook te plakken">📋 Kopieer</button>
-    <button id="dlBtn" title="Download als HTML-bestand (ook weer te openen in deze editor)">⬇︎ HTML</button>
-    <button id="srcBtn" title="Kopieer de HTML-broncode (voor mailtool)">&lt;/&gt; Broncode</button>
-    <button id="openBtn" title="Open een eerder gedownloade editie">📂 Open</button>
-    <button id="newBtn" title="Kies een template voor een nieuwe editie">🧩 Template kiezen</button>
-    <button id="tplSaveTop" title="Sla de huidige editie op als template">📌 Opslaan als template</button>
-    <button id="linksBtn" title="Overzicht en controle van alle links">🔗 Links checken</button>
-    <button id="resetBtn" class="ghost" title="Zet de september 2026-editie terug">↺ Voorbeeld</button>
-    <input type="file" id="fileIn" accept=".html,.htm" hidden>
+<header class="top">
+  <div class="logo" aria-hidden="true">Z</div>
+  <div class="ttl">
+    <b id="hTitle">HRMAM-zine</b>
+    <small><span class="dot" id="dot"></span><span id="savedTxt">opgeslagen</span><span class="ver">editor v30-10 #7</span></small>
   </div>
-  <div class="fmt"><div class="bar-in">
-    <button data-cmd="bold"><b>B</b></button>
-    <button data-cmd="italic"><i>I</i></button>
-    <button data-act="link">🔗 Link</button>
-    <button data-act="unlink">Link weg</button>
-    <button data-act="h3">Tussenkop</button>
-    <button data-act="p">Alinea</button>
-    <button data-cmd="insertUnorderedList">• Opsomming</button>
-    <button data-act="img"><b>🖼 Foto toevoegen</b></button>
-    <button data-cmd="removeFormat">Opmaak wissen</button>
-    <span class="hint">Klik op een foto om hem te verplaatsen, aan te passen of te verwijderen</span>
-  </div></div>
+  <div class="sp"></div>
+  <button class="tool icon" id="undoBtn" type="button" aria-label="Ongedaan maken (Ctrl+Z)" title="Ongedaan maken (Ctrl+Z)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 010 10h-3"/></svg></button>
+  <button class="tool icon" id="redoBtn" type="button" aria-label="Opnieuw (Ctrl+Y)" title="Opnieuw (Ctrl+Y)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H9a5 5 0 000 10h3"/></svg></button>
+  <button class="tool" id="verSaveBtn" type="button" title="Sla deze editie op als nieuwe versie (Ctrl+S)">Opslaan als versie</button>
+  <div class="menuwrap">
+    <button class="tool primary" id="sendBtn" type="button" aria-haspopup="menu" aria-expanded="false">Versturen <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+    <div class="menu" id="sendMenu" role="menu">
+      <button class="mi" type="button" role="menuitem" data-exp="copy">Kopieer voor webmail <small>aanrader</small></button>
+      <button class="mi" type="button" role="menuitem" data-exp="eml">Open als Outlook-mail <small>.eml</small></button>
+      <div class="msep"></div>
+      <button class="mi" type="button" role="menuitem" data-exp="html">Download HTML <small>backup</small></button>
+      <button class="mi" type="button" role="menuitem" data-exp="src">Kopieer broncode</button>
+      <button class="mi" type="button" role="menuitem" data-exp="pdf">Webversie als PDF</button>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+  <nav class="side" aria-label="Functies">
+    <div class="grp">
+      <h4>Editie</h4>
+      <button class="nb" type="button" id="newBtn">Template kiezen</button>
+      <button class="nb" type="button" id="tplSaveTop">Opslaan als template</button>
+      <button class="nb" type="button" id="setBtn">Instellingen &amp; preheader</button>
+      <button class="nb" type="button" id="verListBtn">Versies</button>
+      <button class="nb" type="button" id="openBtn">Editie openen (bestand)</button>
+      <input type="file" id="fileIn" accept=".html,.htm" hidden>
+    </div>
+    <div class="grp">
+      <h4>Inhoud</h4>
+      <button class="nb" type="button" id="goNL">Nederlands <span class="badge" id="cntNL" style="color:var(--mute)"></span></button>
+      <button class="nb" type="button" id="goEN">English <span class="badge" id="cntEN" style="color:var(--mute)"></span></button>
+      <button class="nb" type="button" id="addNL">+ Artikel toevoegen</button>
+    </div>
+    <div class="grp">
+      <h4>Controleren</h4>
+      <button class="nb" type="button" id="linksBtn">Links checken <span class="badge" id="lkBadge"></span></button>
+      <button class="nb" type="button" id="mobBtn">Voorbeeld mobiel</button>
+    </div>
+    <div class="grp">
+      <h4>Exporteren</h4>
+      <button class="nb" type="button" data-exp="copy">Kopieer voor webmail</button>
+      <button class="nb" type="button" data-exp="eml">Open als Outlook-mail</button>
+      <button class="nb" type="button" data-exp="html">Download HTML</button>
+      <button class="nb" type="button" data-exp="src">Kopieer broncode</button>
+      <button class="nb" type="button" data-exp="pdf">Webversie als PDF</button>
+    </div>
+    <div class="grp">
+      <button class="nb sub" type="button" id="resetBtn">Voorbeeldeditie herstellen</button>
+    </div>
+  </nav>
+
+  <main class="center">
+    <details class="card" id="settings">
+      <summary>Instellingen <small id="setSum"></small>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <div class="fields">
+        <label class="f"><span class="lab">Titel / onderwerpregel</span><input id="mTitle" type="text"></label>
+        <label class="f"><span class="lab">Preheader <span id="preCount" class="cnt"></span></span><input id="mPre" type="text">
+          <span class="hint">Voorbeeldtekst in de inbox. Staat onzichtbaar (wit) bovenaan de mail.</span></label>
+        <div class="f"><label class="lab" for="mOnline">Link “Online versie”</label>
+          <div style="display:flex;gap:8px"><input id="mOnline" type="text" style="flex:1" placeholder="https://vu.sharepoint.com/…"><button class="tool" type="button" data-exp="pdf">Maak PDF</button></div>
+          <span class="hint">Bijvoorbeeld een PDF op SharePoint/OneDrive. Leeg = geen link in de mail.</span></div>
+        <label class="tg"><input type="checkbox" id="mEN"><span class="track"></span>Engelse versie opnemen <span class="small" id="tplName" style="margin-left:auto"></span></label>
+      </div>
+    </details>
+    <div id="canvas"></div>
+  </main>
+
+  <aside class="panel" id="panel" aria-label="Tekstopmaak">
+    <div>
+      <h2>Tekstopmaak</h2>
+      <div class="ctx" id="ctx">Klik in een tekst om te beginnen</div>
+    </div>
+    <div id="pText">
+      <p class="pt">Stijl</p>
+      <div class="btns">
+        <button class="tool" type="button" data-act="p">Alinea</button>
+        <button class="tool" type="button" data-act="h3">Tussenkop</button>
+        <button class="tool" type="button" data-cmd="insertUnorderedList">Opsomming</button>
+      </div>
+      <p class="pt" style="margin-top:16px">Nadruk</p>
+      <div class="btns">
+        <button class="tool" type="button" data-cmd="bold" aria-label="Vet" style="font-weight:700">B</button>
+        <button class="tool" type="button" data-cmd="italic" aria-label="Cursief" style="font-style:italic">I</button>
+        <button class="tool" type="button" data-cmd="removeFormat">Opmaak wissen</button>
+      </div>
+    </div>
+    <div id="pLink">
+      <p class="pt">Link</p>
+      <label for="lkUrl" class="small" id="lkLab">Selecteer tekst en vul een adres in</label>
+      <input id="lkUrl" type="text" placeholder="https://… of mailto:…" style="margin-top:6px">
+      <div id="lkMsg" style="margin-top:6px"></div>
+      <div class="btns" style="margin-top:8px">
+        <button class="tool" type="button" id="lkApply">Toepassen</button>
+        <button class="tool" type="button" id="lkOpen">Openen</button>
+        <button class="tool" type="button" id="lkDel">Verwijderen</button>
+      </div>
+    </div>
+    <div id="pImg">
+      <p class="pt">Foto</p>
+      <button class="tool wide" type="button" id="imgAdd">Foto toevoegen</button>
+      <div id="imgCtl" class="dis" style="margin-top:10px">
+        <div class="small" id="imgLab" style="margin-bottom:6px">Klik op een foto om hem aan te passen</div>
+        <div class="btns">
+          <button class="tool" type="button" data-i="left">Links</button>
+          <button class="tool" type="button" data-i="right">Rechts</button>
+          <button class="tool" type="button" data-i="full">Breed</button>
+        </div>
+        <div class="btns" style="margin-top:8px">
+          <button class="tool icon" type="button" data-i="smaller" aria-label="Kleiner">−</button>
+          <button class="tool icon" type="button" data-i="bigger" aria-label="Groter">+</button>
+          <button class="tool icon" type="button" data-i="up" aria-label="Alinea omhoog">↑</button>
+          <button class="tool icon" type="button" data-i="down" aria-label="Alinea omlaag">↓</button>
+          <button class="tool" type="button" data-i="del" style="color:var(--danger)">Verwijderen</button>
+        </div>
+      </div>
+    </div>
+    <div id="pArt" class="dis">
+      <p class="pt">Artikel</p>
+      <label for="artToc" class="small">Naam in de inhoudsopgave</label>
+      <input id="artToc" type="text" style="margin-top:6px">
+      <div class="btns" style="margin-top:12px;align-items:center" id="artColors"></div>
+      <div class="btns" style="margin-top:10px">
+        <button class="tool" type="button" data-bg="#FFFFFF">Wit</button>
+        <button class="tool" type="button" data-bg="#FAF7F5" style="background:#FAF7F5">Beige</button>
+      </div>
+      <div class="btns" style="margin-top:10px">
+        <button class="tool icon" type="button" data-a="up" aria-label="Artikel omhoog">↑</button>
+        <button class="tool icon" type="button" data-a="down" aria-label="Artikel omlaag">↓</button>
+        <button class="tool" type="button" data-a="dup">Dupliceren</button>
+        <button class="tool" type="button" data-a="del" style="color:var(--danger)">Verwijderen</button>
+      </div>
+    </div>
+  </aside>
 </div>
 
-<div class="meta">
-  <label>Titel editie (onderwerpregel + kop)<input id="mTitle"></label>
-  <label>Preheader (preview-tekst in de inbox · staat onzichtbaar, in wit, bovenaan de mail)<input id="mPre"></label>
-  <label>Link “Online versie” <span class="small">— bijv. PDF op SharePoint/OneDrive · leeg = geen link in de mail</span><span style="display:flex;gap:8px"><input id="mOnline" style="flex:1" placeholder="https://vu.sharepoint.com/…"><button type="button" id="webBtn" title="Maak een PDF van deze editie om op SharePoint/OneDrive te zetten">📄 Webversie als PDF</button></span></label>
-  <label style="flex-direction:row;align-items:center;gap:8px;color:var(--ui-ink)"><input type="checkbox" id="mEN"> Engelse versie opnemen <span class="small" id="tplName" style="margin-left:auto"></span></label>
-  <label style="flex-direction:row;align-items:center;gap:8px;color:var(--ui-ink)"><input type="checkbox" id="mUtm"> UTM-tags toevoegen aan links (alleen zinvol als je toegang hebt tot de statistieken van de doelsite)</label>
-</div>
-
-<div id="canvas"></div>
-
-<div id="linkBar">
-  <span class="url" id="lbUrl" title="Klik om te openen"></span><span class="warn" id="lbWarn"></span>
-  <button data-l="open" title="Open in nieuw tabblad">↗ Open</button>
-  <button data-l="edit" title="Link aanpassen">✏️ Wijzig</button>
-  <button data-l="del" title="Link verwijderen, tekst blijft staan">✕</button>
-</div>
-
-<dialog id="tplDlg" style="width:min(720px,94vw)"><form method="dialog" class="dlg">
+<dialog id="tplDlg"><form method="dialog" class="dlg">
   <h2>Template kiezen</h2>
-  <div class="sum">Een template bevat de vaste onderdelen voor een doelgroep: titel, preheader, intro, footer, vaste rubrieken en taal. Je huidige editie blijft bewaard via ↶ Ongedaan en 🗂 Versies.</div>
+  <div class="sum">Een template bevat de vaste onderdelen voor een doelgroep: titel, preheader, intro, footer, vaste rubrieken en taal. Je huidige editie blijft terug te halen via Ongedaan maken en Versies.</div>
   <div id="tplList" class="tplgrid"></div>
-  <div class="act" style="justify-content:space-between;flex-wrap:wrap">
-    <span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="tplSave">💾 Huidige editie opslaan als template</button><button type="button" id="tplImp">📥 Template importeren</button></span>
-    <button value="close">Annuleren</button>
+  <div class="act" style="justify-content:space-between">
+    <span class="btns"><button class="tool" type="button" id="tplSave">Huidige editie opslaan als template</button><button class="tool" type="button" id="tplImp">Template importeren</button></span>
+    <button class="tool" value="close">Sluiten</button>
   </div>
   <input type="file" id="tplFile" accept=".json" hidden>
 </form></dialog>
@@ -199,39 +344,28 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
   <h2>Opgeslagen versies</h2>
   <div class="sum">Versies staan veilig in deze browser. Per onderwerpregel telt het versienummer door; een nieuwe onderwerpregel begint opnieuw bij v1.</div>
   <div class="lk"><table><thead><tr><th>Onderwerp</th><th>Versie</th><th>Opgeslagen</th><th></th></tr></thead><tbody id="verBody"></tbody></table></div>
-  <div class="act"><button value="close" class="primary">Sluiten</button></div>
+  <div class="act"><button class="tool primary" value="close">Sluiten</button></div>
 </form></dialog>
 
 <dialog id="linksDlg"><form method="dialog" class="dlg">
   <h2>Links in deze editie</h2>
   <div class="sum" id="lkSum"></div>
   <div class="lk"><table><thead><tr><th>Waar</th><th>Tekst</th><th>Link</th><th></th></tr></thead><tbody id="lkBody"></tbody></table></div>
-  <div class="act"><button value="close" class="primary">Sluiten</button></div>
+  <div class="act"><button class="tool primary" value="close">Sluiten</button></div>
 </form></dialog>
-
-<div id="imgBar">
-  <button data-i="left" title="Links, tekst eromheen">⬅ Links</button>
-  <button data-i="right" title="Rechts, tekst eromheen">Rechts ➡</button>
-  <button data-i="full" title="Volle breedte, geen tekst ernaast">⬛ Breed</button>
-  <button data-i="smaller" title="Kleiner">−</button>
-  <button data-i="bigger" title="Groter">+</button>
-  <button data-i="up" title="Eén alinea omhoog">↑</button>
-  <button data-i="down" title="Eén alinea omlaag">↓</button>
-  <button data-i="del" class="del" title="Verwijder foto">🗑</button>
-</div>
 
 <dialog id="imgDlg"><form method="dialog" class="dlg">
   <h2>Foto toevoegen</h2>
-  <div class="drop" id="drop">Sleep een foto hierheen of <u>klik om te kiezen</u><br><span class="small">JPG of PNG · wordt automatisch verkleind</span></div>
+  <div class="drop" id="drop"></div>
   <input type="file" id="imgFile" accept="image/*" hidden>
-  <div><div class="small" style="margin-bottom:4px">…of plak een link naar een online foto</div><input type="url" id="imgUrl" placeholder="https://…"></div>
-  <div><div class="small" style="margin-bottom:4px">Plaatsing</div>
-    <div class="seg" id="pos"><button type="button" data-p="left" class="on">⬅ Links + tekst</button><button type="button" data-p="right">Rechts + tekst ➡</button><button type="button" data-p="full">⬛ Volle breedte</button></div></div>
+  <div><div class="small" style="margin-bottom:6px">…of plak een link naar een online foto</div><input type="url" id="imgUrl" placeholder="https://…"></div>
+  <div><div class="small" style="margin-bottom:6px">Plaatsing</div>
+    <div class="seg" id="pos"><button class="tool on" type="button" data-p="left">Links + tekst</button><button class="tool" type="button" data-p="right">Rechts + tekst</button><button class="tool" type="button" data-p="full">Volle breedte</button></div></div>
   <div class="row"><span class="small">Breedte</span><input type="range" id="imgW" min="120" max="610" step="10" value="250"><span id="imgWv" class="small">250 px</span></div>
-  <div class="act"><button value="cancel" formnovalidate>Annuleren</button><button class="primary" id="imgOk" value="ok">Invoegen</button></div>
+  <div class="act"><button class="tool" value="cancel" formnovalidate>Annuleren</button><button class="tool primary" id="imgOk" value="ok">Invoegen</button></div>
 </form></dialog>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 /* ================= data ================= */
@@ -244,10 +378,23 @@ const KEY = "hrmamzine-editor-v1";
 const FULLW = 610;
 
 let S = structuredClone(DEFAULT);
-// oude afbeeldingen (zonder breedte) een standaardbreedte geven
-function normDefaults(){ if(S.showEN===undefined) S.showEN=true; if(S.enLabel===undefined || S.enLabel==="English version") S.enLabel="English"; if(S.utmV!==2){ S.utm=false; S.utmV=2 } if(S.onlineUrl==="#") S.onlineUrl="" }
+// "English below" hoort niet in de intro-tekst: de editor zet hem zelf neer zodra de Engelse versie aan staat
+function stripEnBelow(h){
+  return String(h||"")
+    .replace(/<p[^>]*>\s*(?:<(em|i)>\s*)?(?:<a[^>]*>\s*)?English below\s*(?:<\/a>\s*)?(?:<\/(em|i)>\s*)?<\/p>/gi,"")
+    .replace(/(?:<(em|i)>\s*)?(?:<a[^>]*>\s*)?English below\s*(?:<\/a>\s*)?(?:<\/(em|i)>)?/gi,"")
+    .replace(/<p[^>]*>\s*(?:<br\s*\/?>)?\s*<\/p>/gi,"").trim();
+}
+function normDefaults(){
+  if(S.showEN===undefined) S.showEN=true;
+  if(S.enLabel===undefined || S.enLabel==="English version") S.enLabel="English";
+  S.utm=false; S.utmV=2;
+  if(S.onlineUrl==="#") S.onlineUrl="";
+  S.introNL=stripEnBelow(S.introNL);
+}
 function normImgs(){ normDefaults(); ["nl","en"].forEach(l=>S[l].forEach(a=>{ a.body=a.body.replace(/<img(?![^>]*\bwidth=)([^>]*)>/g,'<img width="250"$1>') })) }
 const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 
 /* ================= opslag (IndexedDB: ruim genoeg voor foto's) ================= */
@@ -265,13 +412,15 @@ const verAll=()=>tx("versions","readonly",st=>st.getAll());
 const verAdd=v=>tx("versions","readwrite",st=>st.add(v));
 const verDel=id=>tx("versions","readwrite",st=>st.delete(id));
 
-let saveT=null, dirty=false, meta={counters:{}, last:null}; // last = {subject,v,hash,ts}
+let saveT=null, dirty=false, lastSaved=null, meta={counters:{}, last:null};
 const hash=str=>{ let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619) } return (h>>>0).toString(36) };
 const subjKey=t=>(t||"").trim().toLowerCase().replace(/\s+/g," ");
 const hhmm=d=>new Date(d).toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"});
 function status(){
-  const l=meta.last && subjKey(meta.last.subject)===subjKey(S.title) ? `· versie v${meta.last.v}${meta.last.hash!==hash(JSON.stringify(S))?" + wijzigingen":""}` : "· nog geen versie";
-  $("#savedTxt").textContent=(dirty?"opslaan…":"opgeslagen")+" "+l;
+  const v=meta.last && subjKey(meta.last.subject)===subjKey(S.title) ? `v${meta.last.v}${meta.last.hash!==hash(JSON.stringify(S))?" + wijzigingen":""}` : "nog geen versie";
+  const t=S.template?S.template+" · ":"";
+  $("#savedTxt").textContent=t+v+" · "+(dirty?"opslaan…":"opgeslagen"+(lastSaved?" "+hhmm(lastSaved):""));
+  $("#hTitle").textContent=S.title||"Naamloze editie";
 }
 function save(){
   dirty=true; $("#dot").classList.add("dirty"); status();
@@ -279,22 +428,21 @@ function save(){
 }
 async function writeNow(){
   clearTimeout(saveT); saveT=null;
-  try{ await kvSet("current",JSON.parse(JSON.stringify(S))); dirty=false; $("#dot").classList.remove("dirty"); status() }
-  catch(e){ $("#savedTxt").textContent="⚠ opslaan mislukt – download HTML als backup" }
-  try{ localStorage.setItem(KEY, JSON.stringify(S)) }catch(e){}   // extra vangnet, mag falen bij grote foto's
+  try{ await kvSet("current",JSON.parse(JSON.stringify(S))); dirty=false; lastSaved=Date.now(); $("#dot").classList.remove("dirty"); status() }
+  catch(e){ $("#savedTxt").textContent="opslaan mislukt – download HTML als backup" }
+  try{ localStorage.setItem(KEY, JSON.stringify(S)) }catch(e){}
 }
-// bij wegklikken/sluiten direct wegschrijven
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden" && dirty) writeNow() });
 addEventListener("pagehide",()=>{ if(dirty) writeNow() });
 addEventListener("beforeunload",e=>{ if(dirty){ writeNow(); e.preventDefault(); e.returnValue="" } });
-function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2600)}
+function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2800)}
 
 /* ================= undo / redo ================= */
 let hist=[], fut=[], typing=null;
 function snap(){ hist.push(JSON.stringify(S)); if(hist.length>150) hist.shift(); fut=[]; ubtn() }
 function snapTyping(){ if(!typing) snap(); clearTimeout(typing); typing=setTimeout(()=>typing=null,1200) }
-function undo(){ if(!hist.length) return; fut.push(JSON.stringify(S)); S=JSON.parse(hist.pop()); typing=null; hideImgBar(); render(); save(); ubtn(); toast("Ongedaan gemaakt") }
-function redo(){ if(!fut.length) return; hist.push(JSON.stringify(S)); S=JSON.parse(fut.pop()); typing=null; hideImgBar(); render(); save(); ubtn() }
+function undo(){ if(!hist.length) return; fut.push(JSON.stringify(S)); S=JSON.parse(hist.pop()); typing=null; clearImg(); render(); save(); ubtn(); toast("Ongedaan gemaakt") }
+function redo(){ if(!fut.length) return; hist.push(JSON.stringify(S)); S=JSON.parse(fut.pop()); typing=null; clearImg(); render(); save(); ubtn() }
 function ubtn(){ $("#undoBtn").disabled=!hist.length; $("#redoBtn").disabled=!fut.length }
 $("#undoBtn").onclick=undo; $("#redoBtn").onclick=redo;
 document.addEventListener("keydown",e=>{
@@ -302,6 +450,7 @@ document.addEventListener("keydown",e=>{
   const k=e.key.toLowerCase();
   if(k==="z"&&!e.shiftKey){ e.preventDefault(); undo() }
   else if(k==="y"||(k==="z"&&e.shiftKey)){ e.preventDefault(); redo() }
+  else if(k==="s"){ e.preventDefault(); saveVersion() }
 },true);
 
 /* ================= paste sanitizer ================= */
@@ -336,163 +485,222 @@ document.addEventListener("paste",e=>{
   document.execCommand("insertHTML",false,clean(h));
 });
 
-/* ================= render canvas ================= */
+/* ================= canvas ================= */
+let active=null;   // {lang,i}: het artikel waar je in werkt
 function header(lang){
-  return `<div class="blk"><div class="topline"><span>${lang==="nl"&&S.preheader?`<span style="background:#f4f4f4;border-radius:4px;padding:1px 6px" title="Staat in wit in de mail: zichtbaar in de inbox-preview, niet voor de lezer">👻 ${esc(S.preheader)}</span>`:""}</span><a>${S.onlineUrl?(lang==="nl"?"Online versie ›":"Online version ›"):""}</a></div><div class="head"><img src="${LOGO}" alt="logo Vrije Universiteit Amsterdam"></div></div>
-  <div class="blk"><div class="toc">${S[lang].map((a,i)=>`<a href="#${lang}${i}">${esc(a.toc)}</a>`).join("")}</div></div>`;
+  const pre=lang==="nl"&&S.preheader?`<span class="pre" title="Onzichtbaar in de mail, zichtbaar als voorbeeldtekst in de inbox">Preheader: ${esc(S.preheader)}</span>`:"<span></span>";
+  return `<div class="blk"><div class="topline">${pre}<a>${S.onlineUrl?(lang==="nl"?"Online versie ›":"Online version ›"):""}</a></div><div class="head"><img src="${LOGO}" alt="logo Vrije Universiteit Amsterdam"></div></div>
+  <div class="blk"><div class="toc">${S[lang].map((a,i)=>`<a href="#${lang}${i}" data-go="${lang}${i}">${esc(a.toc)}</a>`).join("")}</div></div>`;
 }
 function artHTML(lang,a,i){
-  const swatches=COLORS.map(c=>`<button class="sw ${c===a.color?"on":""}" style="background:${c}" data-k="color" data-v="${c}" title="Kleur kop & links"></button>`).join("");
-  const bgs=BGS.map(c=>`<button class="bgsw ${c===a.bg?"on":""}" style="background:${c}" data-k="bg" data-v="${c}" title="Achtergrond"></button>`).join("");
-  return `<div class="blk art" id="${lang}${i}" data-lang="${lang}" data-i="${i}" style="--c:${a.color};background:${a.bg}">
-    <div class="tools">
-      <input data-k="toc" value="${esc(a.toc)}" title="Korte titel in de inhoudsopgave">
-      <span class="sep"></span>${swatches}<span class="sep"></span>${bgs}<span class="sep"></span>
-      <button data-a="img" title="Foto toevoegen aan dit artikel">🖼</button>
-      <button data-a="up" title="Artikel omhoog">↑</button><button data-a="down" title="Artikel omlaag">↓</button>
-      <button data-a="dup" title="Dupliceer">⧉</button><button data-a="del" title="Verwijder artikel" style="color:var(--ui-danger)">✕</button>
-    </div>
+  const on=active&&active.lang===lang&&active.i===i;
+  return `<div class="blk art${on?" active":""}" id="${lang}${i}" data-lang="${lang}" data-i="${i}" style="--c:${a.color};background:${a.bg}">
     <div class="h" contenteditable data-plain data-f="title">${esc(a.title)}</div>
     <div class="b" contenteditable data-f="body">${a.body}</div>
   </div>`;
 }
 function render(){
-  $("#mTitle").value=S.title; $("#mPre").value=S.preheader; $("#mOnline").value=S.onlineUrl||""; $("#mUtm").checked=S.utm!==false; $("#mEN").checked=S.showEN!==false; $("#tplName").textContent=S.template?"Template: "+S.template:""; urlHint();
-  document.title = S.title+" · editor";
-  let h=`<div class="mail">`;
-  h+=`<div class="sec-label">Nederlands</div>`;
+  $("#mTitle").value=S.title; $("#mPre").value=S.preheader||""; $("#mOnline").value=S.onlineUrl||"";
+  $("#mEN").checked=S.showEN!==false; $("#tplName").textContent=S.template?"Template: "+S.template:"";
+  document.title=(S.title||"Editie")+" · HRMAM-zine editor";
+  if(active && !(S[active.lang]&&S[active.lang][active.i]) ) active=null;
+  if(active && active.lang==="en" && S.showEN===false) active=null;
+  const en=S.showEN!==false;
+  let h=`<div class="mail${mobile?" mobile":""}">`;
+  h+=`<div class="sec" id="secNL">Nederlands</div>`;
   h+=header("nl");
   h+=`<div class="blk"><div class="title" contenteditable data-plain data-g="title">${esc(S.title)}</div></div>`;
-  h+=`<div class="blk intro" contenteditable data-g="introNL">${S.introNL}</div>`;
+  h+=`<div class="blk intro"><div contenteditable data-g="introNL">${S.introNL}</div>${en?`<p class="enb" title="Staat er automatisch zolang de Engelse versie aan staat"><a href="#secEN" data-go="secEN">English below</a></p>`:""}</div>`;
   S.nl.forEach((a,i)=>h+=artHTML("nl",a,i));
-  h+=`<button class="add" data-add="nl">＋ Nederlands artikel toevoegen</button>`;
+  h+=`<button class="add" type="button" data-add="nl">+ Nederlands artikel toevoegen</button>`;
   h+=`<div class="footer" contenteditable data-g="footerNL">${S.footerNL}</div>`;
-  if(S.showEN!==false){
-  h+=`<div class="sec-label en-label" contenteditable data-plain data-g="enLabel" title="Dit label staat ook zo in de mail">${esc(S.enLabel)}</div>`;
-  h+=header("en");
-  S.en.forEach((a,i)=>h+=artHTML("en",a,i));
-  h+=`<button class="add" data-add="en">＋ English article</button>`;
-  h+=`<div class="footer" contenteditable data-g="footerEN">${S.footerEN}</div>`;
-  } else h+=`<div class="sec-label">Engelse versie staat uit</div>`;
+  if(en){
+    h+=`<div class="sec ed" id="secEN" contenteditable data-plain data-g="enLabel" title="Dit label staat ook zo in de mail">${esc(S.enLabel)}</div>`;
+    h+=header("en");
+    S.en.forEach((a,i)=>h+=artHTML("en",a,i));
+    h+=`<button class="add" type="button" data-add="en">+ English article</button>`;
+    h+=`<div class="footer" contenteditable data-g="footerEN">${S.footerEN}</div>`;
+  }
   h+=`</div>`;
   $("#canvas").innerHTML=h;
+  sidebar(); panelArt(); preCount(); setSummary(); status();
 }
-// model bijwerken vanuit een bewerkbaar veld
+function sidebar(){
+  $("#cntNL").textContent=S.nl.length;
+  $("#goEN").style.display=S.showEN!==false?"":"none";
+  $("#cntEN").textContent=S.en.length;
+  const links=$$("#canvas [contenteditable] a"); const bad=links.filter(a=>linkIssue(a.getAttribute("href"))).length;
+  const b=$("#lkBadge"); b.textContent=bad?bad+" na te kijken":links.length+" ok"; b.classList.toggle("bad",!!bad);
+}
+function setSummary(){ $("#setSum").textContent=[S.preheader?"preheader ✓":"geen preheader", S.showEN!==false?"NL + EN":"alleen NL", S.onlineUrl?"online versie ✓":""].filter(Boolean).join(" · ") }
 function sync(t){
   const art=t.closest(".art");
   if(art){
     const a=S[art.dataset.lang][+art.dataset.i];
     if(t.dataset.f==="title") a.title=t.innerText.trim();
     else if(t.dataset.f==="body"){ const c=t.cloneNode(true); c.querySelectorAll("img.sel,a.flash").forEach(x=>{x.classList.remove("sel","flash"); if(!x.className) x.removeAttribute("class")}); a.body=c.innerHTML }
-    else if(t.dataset.k==="toc"){ a.toc=t.value; document.querySelectorAll(`.toc a[href="#${art.id}"]`).forEach(x=>x.textContent=t.value) }
   } else if(t.dataset.g){
-    if(t.dataset.g==="title"){ S.title=t.innerText.trim(); $("#mTitle").value=S.title; urlHint() }
+    if(t.dataset.g==="title"){ S.title=t.innerText.trim(); $("#mTitle").value=S.title }
     else if(t.dataset.g==="enLabel") S.enLabel=t.innerText.trim();
     else S[t.dataset.g]=t.innerHTML;
   }
   save();
 }
-
-/* ================= events ================= */
+function setActive(art){
+  const nw=art?{lang:art.dataset.lang,i:+art.dataset.i}:null;
+  if(nw && active && nw.lang===active.lang && nw.i===active.i) return;
+  active=nw; $$(".art.active").forEach(x=>x.classList.remove("active")); if(art) art.classList.add("active"); panelArt();
+}
 $("#canvas").addEventListener("beforeinput",()=>snapTyping());
-$("#canvas").addEventListener("input",e=>{ if(e.target.dataset.k==="toc") snapTyping(); sync(e.target) });
+$("#canvas").addEventListener("input",e=>sync(e.target));
+$("#canvas").addEventListener("focusin",e=>{ const art=e.target.closest(".art"); if(art) setActive(art); ctxLabel(e.target) });
 $("#canvas").addEventListener("click",e=>{
-  const im=e.target.closest(".b img");
-  if(im){ selectImg(im); return }
-  const b=e.target.closest("button"); if(!b) return;
-  if(b.dataset.add){
-    snap();
-    const L=S[b.dataset.add], n=L.length, en=b.dataset.add==="en";
-    L.push({toc:en?"New article":"Nieuw artikel",title:en?"Article title":"Titel van het artikel",
-      color:COLORS[(n+(en?3:0))%4],bg:BGS[(n+(en?1:0))%2],body:en?"<p>Article text…</p>":"<p>Tekst van het artikel…</p>"});
-    render(); save(); document.getElementById(b.dataset.add+n).scrollIntoView({behavior:"smooth",block:"center"}); return;
-  }
-  const art=b.closest(".art"); if(!art) return;
-  const L=S[art.dataset.lang], i=+art.dataset.i;
-  if(b.dataset.k){ snap(); L[i][b.dataset.k]=b.dataset.v; render(); save(); return }
-  const a=b.dataset.a;
-  if(a==="img"){ const body=art.querySelector(".b"); if(!lastRange || !body.contains(lastRange.startContainer)){ const r=document.createRange(); r.selectNodeContents(body); r.collapse(false); lastRange=r } openImgDlg(); return }
-  if(a==="up"&&i>0){snap();[L[i-1],L[i]]=[L[i],L[i-1]]}
-  else if(a==="down"&&i<L.length-1){snap();[L[i+1],L[i]]=[L[i],L[i+1]]}
-  else if(a==="dup"){snap();L.splice(i+1,0,structuredClone(L[i]))}
-  else if(a==="del"){ if(!confirm("Artikel verwijderen?\n\n"+L[i].title+"\n\n(Ongedaan maken kan altijd)")) return; snap(); L.splice(i,1) }
-  else return;
-  render(); save();
+  const go=e.target.closest("[data-go]"); if(go && !(e.target.closest("[contenteditable]"))){ e.preventDefault(); const el=document.getElementById(go.dataset.go); if(el) el.scrollIntoView({behavior:"smooth",block:"start"}); return }
+  const im=e.target.closest(".b img"); if(im){ selectImg(im); return }
+  const art=e.target.closest(".art"); if(art) setActive(art);
+  const b=e.target.closest("button[data-add]"); if(b) addArticle(b.dataset.add);
 });
 $("#canvas").addEventListener("keydown",e=>{ if(e.target.dataset.plain!==undefined && e.key==="Enter"){ e.preventDefault() } });
+function addArticle(lang){
+  snap(); const L=S[lang], n=L.length, en=lang==="en";
+  L.push({toc:en?"New article":"Nieuw artikel",title:en?"Article title":"Titel van het artikel",color:COLORS[(n+(en?3:0))%4],bg:BGS[(n+(en?1:0))%2],body:en?"<p>Article text…</p>":"<p>Tekst van het artikel…</p>"});
+  active={lang,i:n}; render(); save(); document.getElementById(lang+n).scrollIntoView({behavior:"smooth",block:"center"});
+}
+function ctxLabel(t){
+  const art=t&&t.closest&&t.closest(".art"), g=t&&t.closest&&t.closest("[data-g]");
+  $("#ctx").textContent = art ? (art.dataset.lang==="nl"?"Artikel: ":"Article: ")+S[art.dataset.lang][+art.dataset.i].toc
+    : g ? ({title:"Titel",introNL:"Intro",footerNL:"Footer NL",footerEN:"Footer EN",enLabel:"Label Engelse versie"}[g.dataset.g]||"") : "Klik in een tekst om te beginnen";
+}
+
+/* ================= instellingen ================= */
 ["mTitle","mPre"].forEach(id=>{
   $("#"+id).addEventListener("beforeinput",()=>snapTyping());
   $("#"+id).addEventListener("input",e=>{
-    const k=id==="mTitle"?"title":"preheader"; S[k]=e.target.value; urlHint();
-    if(k==="preheader"){ const t=document.querySelector(".topline > span"); if(t) t.innerHTML=S.preheader?`<span style="background:#f4f4f4;border-radius:4px;padding:1px 6px">👻 ${esc(S.preheader)}</span>`:"" }
-    if(k==="title"){ const t=document.querySelector('[data-g="title"]'); if(t) t.textContent=S.title; document.title=S.title+" · editor" }
+    const k=id==="mTitle"?"title":"preheader"; S[k]=e.target.value; preCount(); setSummary(); status();
+    if(k==="preheader"){ const t=$(".topline"); if(t) t.firstElementChild.outerHTML=S.preheader?`<span class="pre">Preheader: ${esc(S.preheader)}</span>`:"<span></span>" }
+    if(k==="title"){ const t=$('[data-g="title"]'); if(t) t.textContent=S.title }
     save();
   });
 });
-
 $("#mOnline").addEventListener("beforeinput",()=>snapTyping());
-$("#mOnline").addEventListener("input",e=>{ S.onlineUrl=e.target.value.trim(); document.querySelectorAll(".topline > a").forEach((a,i)=>a.textContent=S.onlineUrl?(i===0?"Online versie ›":"Online version ›"):""); save() });
-$("#mUtm").addEventListener("change",e=>{ snap(); S.utm=e.target.checked; save() });
-$("#mEN").addEventListener("change",e=>{ snap(); S.showEN=e.target.checked; render(); save() });
+$("#mOnline").addEventListener("input",e=>{ S.onlineUrl=e.target.value.trim(); $$(".topline > a").forEach((a,i)=>a.textContent=S.onlineUrl?(i===0?"Online versie ›":"Online version ›"):""); setSummary(); save() });
+$("#mEN").addEventListener("change",e=>{ snap(); S.showEN=e.target.checked; render(); save(); toast(S.showEN?"Engelse versie staat aan — “English below” staat weer in de intro":"Engelse versie staat uit — ook “English below” is weg") });
+const PRE_OPT=50;
+function preCount(){
+  const el=$("#preCount"), n=($("#mPre").value||"").length;
+  el.classList.toggle("over",n>PRE_OPT);
+  el.textContent=n>PRE_OPT?`${n} / ${PRE_OPT} · mobiel kapt af`:`${n} / ${PRE_OPT}`;
+  el.title="Optimaal: maximaal "+PRE_OPT+" tekens (zichtbaar op mobiel). Langer mag.";
+}
+$("#setBtn").onclick=()=>{ const d=$("#settings"); d.open=true; d.scrollIntoView({behavior:"smooth",block:"start"}); setTimeout(()=>$("#mPre").focus(),300) };
 
-/* ================= online versie ================= */
-const slug=t=>(t||"hrmam-zine").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
-const onlineUrl=()=>S.onlineUrl||"";
-function urlHint(){}
-$("#webBtn").onclick=()=>{
-  const w=window.open("","_blank"); if(!w){ toast("Pop-up geblokkeerd — sta pop-ups toe voor deze pagina"); return }
-  const html=exportHTML(false,true).replace("</head>",`<style>@page{size:A4;margin:10mm}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}</style></head>`)
-    .replace("</body>",`<script>document.title=${JSON.stringify(safe(S.title))};window.onload=()=>setTimeout(()=>print(),400)<\/script></body>`);
-  w.document.open(); w.document.write(html); w.document.close();
-  toast("Kies in het printvenster: Opslaan als PDF");
-};
+/* ================= zijbalk ================= */
+let mobile=false;
+$("#goNL").onclick=()=>$("#secNL").scrollIntoView({behavior:"smooth",block:"start"});
+$("#goEN").onclick=()=>{ const s=$("#secEN"); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}) };
+$("#addNL").onclick=()=>addArticle("nl");
+$("#mobBtn").onclick=()=>{ mobile=!mobile; $("#mobBtn").classList.toggle("on",mobile); $(".mail").classList.toggle("mobile",mobile); toast(mobile?"Voorbeeld op telefoonbreedte":"Terug naar normale breedte") };
 
-/* ================= formatting bar ================= */
+/* ================= opmaakpaneel ================= */
 let lastRange=null;
 document.addEventListener("selectionchange",()=>{
   const s=getSelection(); if(!s.rangeCount) return;
   const n=s.anchorNode && (s.anchorNode.nodeType===1?s.anchorNode:s.anchorNode.parentElement);
-  if(n && n.closest && n.closest("[contenteditable]")) lastRange=s.getRangeAt(0).cloneRange();
+  if(n && n.closest && n.closest("#canvas [contenteditable]")){ lastRange=s.getRangeAt(0).cloneRange(); linkPanel(linkInEditable(s.anchorNode)) }
 });
 function restore(){ if(lastRange){const s=getSelection();s.removeAllRanges();s.addRange(lastRange)} }
 function editableOf(node){ const n=node&&(node.nodeType===1?node:node.parentElement); return n&&n.closest("[contenteditable]") }
-document.querySelector(".fmt").addEventListener("mousedown",e=>e.preventDefault());
-document.querySelector(".fmt").addEventListener("click",e=>{
+// knoppen in het paneel mogen de selectie in de tekst niet weghalen
+$("#panel").addEventListener("mousedown",e=>{ if(e.target.closest("button")) e.preventDefault() });
+$("#pText").addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b) return;
-  const a=b.dataset.act;
-  if(a==="img"){
-    if(!lastRange || !editableOf(lastRange.startContainer) || !editableOf(lastRange.startContainer).classList.contains("b")){ toast("Klik eerst in de tekst van een artikel, op de plek waar de foto moet komen"); return }
-    openImgDlg(); return;
-  }
-  restore(); const ce=lastRange && editableOf(lastRange.startContainer); if(!ce) return;
+  restore(); const ce=lastRange && editableOf(lastRange.startContainer);
+  if(!ce || ce.dataset.plain!==undefined){ toast("Klik eerst in een tekst"); return }
   snap();
   if(b.dataset.cmd) document.execCommand(b.dataset.cmd,false,null);
-  if(a==="link"){ const u=prompt("Link (https://… of mailto:…)","https://"); if(u){ document.execCommand("createLink",false,u) } }
-  if(a==="unlink") document.execCommand("unlink");
-  if(a==="h3") document.execCommand("formatBlock",false,"h3");
-  if(a==="p") document.execCommand("formatBlock",false,"p");
+  if(b.dataset.act==="h3") document.execCommand("formatBlock",false,"h3");
+  if(b.dataset.act==="p") document.execCommand("formatBlock",false,"p");
   sync(ce);
 });
 
-/* ================= foto's ================= */
+/* ---------- links ---------- */
+let curLink=null;
+function linkIssue(h){
+  h=(h||"").trim();
+  if(!h || h==="#" || /^https?:\/\/?$/i.test(h)) return "lege link";
+  if(/\s/.test(h)) return "spatie in link";
+  if(/safelinks\.protection\.outlook\.com/i.test(h)) return "Outlook-safelink (kopie uit mail)";
+  if(/^mailto:/i.test(h)) return /^mailto:[^@\s]+@[^@\s]+\.[a-z]{2,}/i.test(h)?"":"ongeldig e-mailadres";
+  if(/^tel:/i.test(h)) return "";
+  if(!/^https?:\/\//i.test(h)) return "begint niet met https://";
+  if(/^http:\/\//i.test(h)) return "geen https";
+  return "";
+}
+function linkInEditable(n){ const e=n&&(n.nodeType===1?n:n.parentElement); const a=e&&e.closest("a"); return a&&a.closest("#canvas [contenteditable]")?a:null }
+function linkPanel(a){
+  curLink=a;
+  const h=a?a.getAttribute("href")||"":"";
+  if(document.activeElement!==$("#lkUrl")) $("#lkUrl").value=h;
+  $("#lkLab").textContent=a?"Link op “"+a.textContent.trim().slice(0,40)+"”":"Selecteer tekst en vul een adres in";
+  $("#lkApply").textContent=a?"Bijwerken":"Toepassen";
+  $("#lkOpen").disabled=!a; $("#lkDel").disabled=!a;
+  const is=a?linkIssue(h):"";
+  $("#lkMsg").innerHTML=a?(is?`<span class="warn">Let op: ${esc(is)}</span>`:`<span class="okt">Link ziet er goed uit</span>`):"";
+}
+function applyLink(){
+  const u=$("#lkUrl").value.trim(); if(!u){ toast("Vul eerst een adres in"); return }
+  if(curLink && document.contains(curLink)){ snap(); curLink.setAttribute("href",u); curLink.setAttribute("target","_blank"); sync(curLink.closest("[contenteditable]")); linkPanel(curLink); toast("Link bijgewerkt"); return }
+  restore(); const ce=lastRange && editableOf(lastRange.startContainer);
+  if(!ce || lastRange.collapsed){ toast("Selecteer eerst de tekst die een link moet worden"); return }
+  snap(); document.execCommand("createLink",false,u);
+  const a=linkInEditable(getSelection().anchorNode); if(a) a.setAttribute("target","_blank");
+  sync(ce); linkPanel(a); sidebar(); toast("Link toegevoegd");
+}
+$("#lkApply").onclick=applyLink;
+$("#lkUrl").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); applyLink() } });
+$("#lkOpen").onclick=()=>{ if(curLink) window.open(curLink.href,"_blank","noopener") };
+$("#lkDel").onclick=()=>{ if(!curLink) return; snap(); const ed=curLink.closest("[contenteditable]"); curLink.replaceWith(...curLink.childNodes); sync(ed); linkPanel(null); sidebar() };
+// Ctrl/Cmd + klik opent een link direct
+$("#canvas").addEventListener("click",e=>{ const a=linkInEditable(e.target); if(a && (e.ctrlKey||e.metaKey)){ e.preventDefault(); window.open(a.href,"_blank","noopener") } },true);
+
+/* ---------- artikel ---------- */
+function panelArt(){
+  const p=$("#pArt"), a=active&&S[active.lang][active.i];
+  p.classList.toggle("dis",!a);
+  if(document.activeElement!==$("#artToc")) $("#artToc").value=a?a.toc:"";
+  $("#artColors").innerHTML=COLORS.map(c=>`<button class="sw${a&&a.color===c?" on":""}" type="button" data-color="${c}" style="background:${c}" aria-label="Kleur ${c}"></button>`).join("")+`<span class="small" style="margin-left:6px">kop &amp; links</span>`;
+  $$("#pArt [data-bg]").forEach(b=>b.classList.toggle("on",!!a&&a.bg===b.dataset.bg));
+  $$("#pArt [data-bg]").forEach(b=>{ b.style.background=b.classList.contains("on")?"":b.dataset.bg })
+}
+$("#artToc").addEventListener("beforeinput",()=>snapTyping());
+$("#artToc").addEventListener("input",e=>{ if(!active) return; S[active.lang][active.i].toc=e.target.value; $$(`.toc a[data-go="${active.lang}${active.i}"]`).forEach(x=>x.textContent=e.target.value); ctxLabel(document.getElementById(active.lang+active.i)); save() });
+$("#pArt").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b||!active) return;
+  const L=S[active.lang], i=active.i;
+  if(b.dataset.color){ snap(); L[i].color=b.dataset.color }
+  else if(b.dataset.bg){ snap(); L[i].bg=b.dataset.bg }
+  else if(b.dataset.a==="up"){ if(i===0) return; snap(); [L[i-1],L[i]]=[L[i],L[i-1]]; active.i=i-1 }
+  else if(b.dataset.a==="down"){ if(i>=L.length-1) return; snap(); [L[i+1],L[i]]=[L[i],L[i+1]]; active.i=i+1 }
+  else if(b.dataset.a==="dup"){ snap(); L.splice(i+1,0,structuredClone(L[i])); active.i=i+1 }
+  else if(b.dataset.a==="del"){ if(!confirm("Artikel verwijderen?\n\n"+L[i].title+"\n\n(Ongedaan maken kan altijd)")) return; snap(); L.splice(i,1); active=null }
+  else return;
+  render(); save();
+  if(active){ const el=document.getElementById(active.lang+active.i); if(el) el.scrollIntoView({behavior:"smooth",block:"nearest"}) }
+});
+
+/* ---------- foto's ---------- */
 let selImg=null, pendingSrc=null, pos="left";
-const bar=$("#imgBar");
 function selectImg(im){
   if(selImg) selImg.classList.remove("sel");
-  selImg=im; im.classList.add("sel"); placeBar();
-  bar.querySelectorAll("[data-i]").forEach(x=>x.classList.toggle("on", x.dataset.i===(im.getAttribute("align")||"full")));
+  selImg=im; im.classList.add("sel");
+  const art=im.closest(".art"); if(art) setActive(art);
+  $("#imgCtl").classList.remove("dis");
+  $("#imgLab").textContent="Geselecteerde foto · "+(im.getAttribute("width")||"?")+" px breed";
+  $$("#imgCtl [data-i]").forEach(x=>x.classList.toggle("on", x.dataset.i===(im.getAttribute("align")||"full")));
 }
-function placeBar(){
-  if(!selImg) return; const r=selImg.getBoundingClientRect();
-  bar.classList.add("show");
-  const top=r.top+scrollY-bar.offsetHeight-8, left=Math.max(8,Math.min(r.left+scrollX, document.documentElement.clientWidth-bar.offsetWidth-8));
-  bar.style.top=(top<scrollY+110? r.bottom+scrollY+8 : top)+"px"; bar.style.left=left+"px";
-}
-function hideImgBar(){ if(selImg){ selImg.classList.remove("sel"); if(!selImg.className) selImg.removeAttribute("class") } selImg=null; bar.classList.remove("show") }
-document.addEventListener("mousedown",e=>{ if(!e.target.closest("#imgBar") && !e.target.closest(".b img")) hideImgBar() });
-addEventListener("resize",placeBar);
-bar.addEventListener("mousedown",e=>e.preventDefault());
-bar.addEventListener("click",e=>{
+function clearImg(){ if(selImg){ selImg.classList.remove("sel"); if(!selImg.className) selImg.removeAttribute("class") } selImg=null; $("#imgCtl").classList.add("dis"); $("#imgLab").textContent="Klik op een foto om hem aan te passen"; $$("#imgCtl [data-i]").forEach(x=>x.classList.remove("on")) }
+document.addEventListener("mousedown",e=>{ if(!e.target.closest("#panel") && !e.target.closest(".b img") && !e.target.closest("dialog")) clearImg() });
+$("#imgCtl").addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b||!selImg) return;
   const im=selImg, body=im.closest(".b"), act=b.dataset.i; snap();
   const w=+im.getAttribute("width")||250;
@@ -505,20 +713,27 @@ bar.addEventListener("click",e=>{
     const target=act==="up"?blk.previousElementSibling:blk.nextElementSibling;
     if(target){
       const old=im.parentElement!==body?im.parentElement:null;
-      // foto aan het begin van de vorige/volgende alinea, zodat de tekst ernaast loopt
       if(/^(P|H3)$/.test(target.tagName)) target.prepend(im);
       else if(act==="up") target.before(im); else target.after(im);
       if(old && !old.textContent.trim() && !old.querySelector("img")) old.remove();
     } else { toast(act==="up"?"Foto staat al bovenaan":"Foto staat al onderaan") }
   }
-  if(act==="del"){ im.remove(); hideImgBar(); sync(body); return }
-  sync(body); selectImg(im); im.scrollIntoView({block:"nearest",behavior:"smooth"}); setTimeout(placeBar,250);
+  if(act==="del"){ im.remove(); clearImg(); sync(body); return }
+  sync(body); selectImg(im); im.scrollIntoView({block:"nearest",behavior:"smooth"});
 });
-
-// dialoog
 const dlg=$("#imgDlg"), drop=$("#drop");
-function openImgDlg(){ pendingSrc=null; $("#imgUrl").value=""; drop.innerHTML='Sleep een foto hierheen of <u>klik om te kiezen</u><br><span class="small">JPG of PNG · wordt automatisch verkleind</span>'; setPos(pos); dlg.showModal() }
-function setPos(p){ pos=p; $("#pos").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.p===p));
+const DROP_TXT='Sleep een foto hierheen of <u>klik om te kiezen</u><br><span class="small">JPG of PNG · wordt automatisch verkleind</span>';
+$("#imgAdd").onclick=()=>{
+  const inBody=lastRange && editableOf(lastRange.startContainer) && editableOf(lastRange.startContainer).classList.contains("b");
+  if(!inBody){
+    const art=active&&document.getElementById(active.lang+active.i);
+    if(!art){ toast("Klik eerst in de tekst van een artikel, op de plek waar de foto moet komen"); return }
+    const body=art.querySelector(".b"), r=document.createRange(); r.selectNodeContents(body); r.collapse(false); lastRange=r;
+  }
+  openImgDlg();
+};
+function openImgDlg(){ pendingSrc=null; $("#imgUrl").value=""; drop.innerHTML=DROP_TXT; setPos(pos); dlg.showModal() }
+function setPos(p){ pos=p; $$("#pos button").forEach(x=>x.classList.toggle("on",x.dataset.p===p));
   const w=$("#imgW"); if(p==="full"){ w.value=FULLW } else if(+w.value>=FULLW){ w.value=250 } $("#imgWv").textContent=w.value+" px" }
 $("#pos").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setPos(b.dataset.p) });
 $("#imgW").addEventListener("input",e=>$("#imgWv").textContent=e.target.value+" px");
@@ -548,84 +763,35 @@ dlg.addEventListener("close",()=>{
   const w=$("#imgW").value, al=pos==="full"?"":` align="${pos}"`;
   document.execCommand("insertHTML",false,`<img src="${esc(src)}" alt="" width="${w}"${al}>`);
   sync(body);
-  const ims=body.querySelectorAll("img"); const im=[...ims].find(x=>x.getAttribute("src")===src); if(im) setTimeout(()=>selectImg(im),50);
-  toast("Foto geplaatst — klik erop om te verplaatsen of aan te passen");
+  const im=[...body.querySelectorAll("img")].find(x=>x.getAttribute("src")===src); if(im) setTimeout(()=>selectImg(im),50);
+  toast("Foto geplaatst — klik erop om hem aan te passen");
 });
 
-/* ================= links: tonen, openen, wijzigen, controleren ================= */
-const lb=$("#linkBar"); let curLink=null, lbHide=null;
-function linkIssue(h){
-  h=(h||"").trim();
-  if(!h || h==="#" || /^https?:\/\/?$/i.test(h)) return "lege link";
-  if(/\s/.test(h)) return "spatie in link";
-  if(/safelinks\.protection\.outlook\.com/i.test(h)) return "Outlook-safelink (kopie uit mail)";
-  if(/^mailto:/i.test(h)) return /^mailto:[^@\s]+@[^@\s]+\.[a-z]{2,}/i.test(h)?"":"ongeldig e-mailadres";
-  if(/^tel:/i.test(h)) return "";
-  if(!/^https?:\/\//i.test(h)) return "begint niet met https://";
-  if(/^http:\/\//i.test(h)) return "geen https";
-  return "";
-}
-function showLinkBar(a){
-  clearTimeout(lbHide); curLink=a;
-  const h=a.getAttribute("href")||"", issue=linkIssue(h);
-  $("#lbUrl").textContent=h.replace(/^mailto:/i,"✉ ")||"(leeg)"; $("#lbUrl").title=h;
-  $("#lbWarn").textContent=issue?"⚠ "+issue:"";
-  lb.classList.add("show");
-  const r=a.getBoundingClientRect();
-  let top=r.bottom+scrollY+6, left=r.left+scrollX;
-  left=Math.max(8,Math.min(left,document.documentElement.clientWidth-lb.offsetWidth-8));
-  lb.style.top=top+"px"; lb.style.left=left+"px";
-}
-function hideLinkBar(){ lb.classList.remove("show"); curLink=null }
-function linkInEditable(n){ const e=n&&(n.nodeType===1?n:n.parentElement); const a=e&&e.closest("a"); return a&&a.closest("[contenteditable]")?a:null }
-$("#canvas").addEventListener("mouseover",e=>{ const a=linkInEditable(e.target); if(a) showLinkBar(a) });
-$("#canvas").addEventListener("mouseout",e=>{ const a=linkInEditable(e.target); if(a && !lb.matches(":hover")) lbHide=setTimeout(()=>{ if(!lb.matches(":hover")){ const s=getSelection(); if(!(s.rangeCount&&linkInEditable(s.anchorNode)===curLink)) hideLinkBar() } },500) });
-lb.addEventListener("mouseleave",()=>{ lbHide=setTimeout(()=>{ const s=getSelection(); if(!(s.rangeCount&&linkInEditable(s.anchorNode)===curLink)) hideLinkBar() },400) });
-lb.addEventListener("mouseenter",()=>clearTimeout(lbHide));
-document.addEventListener("selectionchange",()=>{ const s=getSelection(); if(!s.rangeCount) return; const a=linkInEditable(s.anchorNode); if(a) showLinkBar(a); else if(!lb.matches(":hover") && curLink && !curLink.matches(":hover")) hideLinkBar() });
-// Ctrl/Cmd + klik opent de link direct
-$("#canvas").addEventListener("click",e=>{ const a=linkInEditable(e.target); if(a && (e.ctrlKey||e.metaKey)){ e.preventDefault(); window.open(a.href,"_blank","noopener") } },true);
-lb.addEventListener("mousedown",e=>e.preventDefault());
-$("#lbUrl").onclick=()=>{ if(curLink) window.open(curLink.href,"_blank","noopener") };
-lb.addEventListener("click",e=>{
-  const b=e.target.closest("button"); if(!b||!curLink) return;
-  const a=curLink, ed=a.closest("[contenteditable]");
-  if(b.dataset.l==="open") window.open(a.href,"_blank","noopener");
-  if(b.dataset.l==="edit"){ const u=prompt("Link aanpassen",a.getAttribute("href")||"https://"); if(u!==null && u.trim()){ snap(); a.setAttribute("href",u.trim()); a.setAttribute("target","_blank"); sync(ed); showLinkBar(a) } }
-  if(b.dataset.l==="del"){ snap(); a.replaceWith(...a.childNodes); sync(ed); hideLinkBar() }
-});
-addEventListener("resize",()=>{ if(curLink) showLinkBar(curLink) });
-
-// overzicht
+/* ================= links checken ================= */
 function whereOf(a){
   const art=a.closest(".art"); if(art){ const L=S[art.dataset.lang][+art.dataset.i]; return (art.dataset.lang==="nl"?"NL":"EN")+" · "+L.toc }
   const g=a.closest("[data-g]"); return g?({introNL:"Intro",footerNL:"Footer NL",footerEN:"Footer EN"}[g.dataset.g]||g.dataset.g):"";
 }
 $("#linksBtn").onclick=()=>{
-  const links=[...document.querySelectorAll("#canvas [contenteditable] a")];
+  const links=$$("#canvas [contenteditable] a");
   let bad=0;
   $("#lkBody").innerHTML=links.map((a,i)=>{ const h=a.getAttribute("href")||"", is=linkIssue(h); if(is) bad++;
     return `<tr><td>${esc(whereOf(a))}</td><td>${esc(a.textContent.trim().slice(0,60))}</td>
-      <td class="u"><a href="${esc(h)}" target="_blank" rel="noopener">${esc(h)}</a>${is?`<div class="bad">⚠ ${esc(is)}</div>`:""}</td>
-      <td><button type="button" data-go="${i}">Toon</button></td></tr>` }).join("");
-  $("#lkSum").innerHTML=`${links.length} links gevonden · ${bad?`<b style="color:var(--ui-danger)">${bad} om na te kijken</b>`:`<span class="ok">geen opvallende problemen</span>`}. Klik op een link om hem in een nieuw tabblad te testen.`;
+      <td class="u"><a href="${esc(h)}" target="_blank" rel="noopener">${esc(h)}</a>${is?`<div class="bad">${esc(is)}</div>`:""}</td>
+      <td><button class="tool" type="button" data-go="${i}">Toon</button></td></tr>` }).join("");
+  $("#lkSum").innerHTML=`${links.length} links gevonden · ${bad?`<b style="color:var(--danger)">${bad} om na te kijken</b>`:`<span class="okt">geen opvallende problemen</span>`}. Klik op een link om hem in een nieuw tabblad te testen.`;
   $("#lkBody").onclick=e=>{ const b=e.target.closest("[data-go]"); if(!b) return; const a=links[+b.dataset.go]; $("#linksDlg").close();
-    a.scrollIntoView({behavior:"smooth",block:"center"}); a.classList.add("flash"); setTimeout(()=>{a.classList.remove("flash"); if(!a.className) a.removeAttribute("class")},2500); setTimeout(()=>showLinkBar(a),400) };
+    a.scrollIntoView({behavior:"smooth",block:"center"}); a.classList.add("flash"); setTimeout(()=>{a.classList.remove("flash"); if(!a.className) a.removeAttribute("class")},2500);
+    const art=a.closest(".art"); if(art) setActive(art); linkPanel(a) };
   $("#linksDlg").showModal();
 };
 
 /* ================= export: één Outlook-bestendige opbouw ================= */
 const OF="font-family: Arial, Helvetica, sans-serif;";
 function txt(size,color,lh,extra=""){ return `${OF} font-size: ${size}px; color: ${color}; line-height: ${lh}px; mso-line-height-rule: exactly; ${extra}` }
-function utm(href,content){
-  if(S.utm===false || !/^https?:\/\//i.test(href) || /[?&]utm_/i.test(href)) return href;
-  try{ const u=new URL(href);
-    if(/safelinks\.protection/i.test(u.hostname)) return href;
-    u.searchParams.set("utm_source","hrmam-zine"); u.searchParams.set("utm_medium","email");
-    u.searchParams.set("utm_campaign",slug(S.title)); if(content) u.searchParams.set("utm_content",content);
-    return u.toString() }catch(e){ return href }
-}
-function mailBody(html,color,content){
+const slug=t=>(t||"hrmam-zine").normalize("NFKD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+const onlineUrl=()=>S.onlineUrl||"";
+function mailBody(html,color){
   const d=document.createElement("div"); d.innerHTML=html;
   d.querySelectorAll("[contenteditable]").forEach(x=>x.removeAttribute("contenteditable"));
   d.querySelectorAll("span").forEach(x=>x.removeAttribute("style"));
@@ -635,16 +801,14 @@ function mailBody(html,color,content){
   d.querySelectorAll("ul,ol").forEach(x=>x.setAttribute("style",`${OF} margin: 0 0 16px 0; padding-left: 22px; color: #333333;`));
   d.querySelectorAll("h3").forEach(x=>x.setAttribute("style",txt(18,"#333333",26,"font-weight: bold; margin: 20px 0 10px 0;")));
   d.querySelectorAll("strong,b").forEach(x=>x.setAttribute("style","font-weight: bold;"));
-  d.querySelectorAll("a").forEach(a=>{a.setAttribute("style",`${OF} color: ${color}; text-decoration: underline;`); a.setAttribute("target","_blank"); if(a.getAttribute("href")) a.setAttribute("href",utm(a.getAttribute("href"),content))});
+  d.querySelectorAll("a").forEach(a=>{a.setAttribute("style",`${OF} color: ${color}; text-decoration: underline;`); a.setAttribute("target","_blank")});
   d.querySelectorAll("img").forEach(i=>{
     const w=Math.min(FULLW,+i.getAttribute("width")||250), al=i.getAttribute("align");
     [...i.attributes].forEach(at=>{ if(!/^(src|alt|width)$/.test(at.name)) i.removeAttribute(at.name) });
     i.setAttribute("width",w); i.setAttribute("border","0");
     i.setAttribute("style",`display: block; width: ${w}px; max-width: 100%; height: auto; border: 0;`);
-    // foto (evt. met link eromheen) als geheel
     let node=i; while(node.parentElement && node.parentElement!==d && /^(A|SPAN|STRONG|B|EM|I)$/.test(node.parentElement.tagName)) node=node.parentElement;
     const block=node.parentElement!==d ? node.parentElement : null;
-    // witruimte zit in de tabelcel: dat respecteert Outlook wel
     const t=document.createElement("table");
     t.setAttribute("cellpadding","0"); t.setAttribute("cellspacing","0"); t.setAttribute("border","0"); t.setAttribute("role","presentation");
     let pad;
@@ -663,34 +827,34 @@ function mailTable(){
     for(let i=0;i<L.length;i+=3){ h+="<tr>"; for(let j=i;j<i+3;j++){ const a=L[j];
       h+=`<td width="33%" valign="top" align="left" style="width: 33%; padding: 0 8px 4px 0; ${txt(16,"#007ab8",28)}">${a?`<a href="#${lang}-artikel-${j+1}" style="${txt(16,"#007ab8",28)} text-decoration: none;"><font color="#007ab8"><span style="${txt(16,"#007ab8",28)} text-decoration: none;">${esc(a.toc)}</span></font></a>`:"&nbsp;"}</td>` } h+="</tr>" }
     return h+"</table>" };
-  // preheader in wit (zelfde kleur als de achtergrond): de inbox toont hem als voorbeeldtekst, de lezer ziet hem niet
-  // #FEFEFE i.p.v. #FFFFFF: Outlook maakt zuiver wit bij plakken "automatisch" (= zwart)
+  // preheader in bijna-wit (#FEFEFE): onzichtbaar voor de lezer, wel de voorbeeldtekst in de inbox
   const pre=lang=>lang==="nl"&&S.preheader ? `<font color="#FEFEFE" size="1" style="${OF} font-size: 1px; line-height: 1px; color: #FEFEFE;"><span style="${OF} font-size: 1px; line-height: 1px; color: #FEFEFE; mso-color-alt: #FEFEFE;">${esc(S.preheader)}${"&nbsp;&zwnj;".repeat(60)}</span></font>` : "";
   const top=lang=>`<table width="100%" cellpadding="0" cellspacing="0" border="0" style="width: 100%; border-collapse: collapse;"><tr>
     <td align="left" valign="top" bgcolor="#FFFFFF" style="${OF} font-size: 1px; line-height: 1px; color: #FEFEFE; background-color: #FFFFFF; padding: 0;">${pre(lang)||"&nbsp;"}</td>
     ${onlineUrl()?`<td align="right" valign="top" style="${txt(12,"#777777",16)} padding: 0 0 0 12px; white-space: nowrap;"><a href="${esc(onlineUrl())}" target="_blank" style="${txt(12,"#777777",16)} text-decoration: none; white-space: nowrap;">${lang==="nl"?"Online versie":"Online version"} &#8250;</a></td>`:""}</tr></table>`;
   const head=`<a href="${esc(S.logoUrl||"https://vu.nl")}" target="_blank"><img src="${LOGO}" alt="logo Vrije Universiteit Amsterdam" height="54" border="0" style="height: 54px; display: block;"></a>`;
   const art=(a,lang,i)=>row(a.bg,"25px 20px 10px 20px",
-    `<p style="${txt(28,a.color,40,"margin: 0 0 24px 0; font-weight: normal;")}"><a name="${lang}-artikel-${i+1}" id="${lang}-artikel-${i+1}" style="${txt(28,a.color,40)} text-decoration: none;">${esc(a.title)}</a></p>${mailBody(a.body,a.color,lang+"-"+slug(a.toc))}<div style="clear: both; font-size: 0; line-height: 0;">&nbsp;</div>`);
+    `<p style="${txt(28,a.color,40,"margin: 0 0 24px 0; font-weight: normal;")}"><a name="${lang}-artikel-${i+1}" id="${lang}-artikel-${i+1}" style="${txt(28,a.color,40)} text-decoration: none;">${esc(a.title)}</a></p>${mailBody(a.body,a.color)}<div style="clear: both; font-size: 0; line-height: 0;">&nbsp;</div>`);
   const foot=t=>row("#F2EFED","25px 25px",`<p style="${txt(13,"#333333",18,"margin: 0; text-align: center;")}">${t.replace(/<a /g,`<a style="${OF} color: #0000EE; text-decoration: underline;" `)}</p>`);
-  let introSrc=S.introNL; if(S.showEN!==false && !/<a\b/i.test(introSrc)) introSrc=introSrc.replace(/English below/,`<a href="#english" style="${OF} color: #333333; text-decoration: underline;">English below</a>`);
-  const intro=introSrc.replace(/<p[^>]*>/g,`<p style="${txt(16,"#333333",26,"margin: 0;")}">`).replace(/<strong>/g,'<strong style="font-weight: bold;">');
+  const en=S.showEN!==false;
+  let intro=stripEnBelow(S.introNL).replace(/<p[^>]*>/g,`<p style="${txt(16,"#333333",26,"margin: 0;")}">`).replace(/<strong>/g,'<strong style="font-weight: bold;">');
+  if(en) intro+=`<p style="${txt(16,"#333333",26,"margin: 0;")}"><em><a href="#english" style="${OF} color: #333333; text-decoration: underline;">English below</a></em></p>`;
   let h=`<table width="650" cellpadding="0" cellspacing="0" border="0" align="center" bgcolor="#FFFFFF" style="width: 100%; max-width: 650px; background-color: #FFFFFF; border-collapse: collapse; margin: 0 auto;">`;
   h+=row("#FFFFFF","10px 20px 0 20px",top("nl"))+row("#FFFFFF","10px 20px 15px 20px",head)+row("#FFFFFF","20px 20px",toc(S.nl,"nl"));
   h+=row("#FFFFFF","40px 40px",`<p style="${txt(38,"#333333",50,"margin: 0; font-weight: normal;")}"><span style="${txt(38,"#333333",50)}">${esc(S.title)}</span></p>`);
   h+=row("#FAF7F5","30px 20px 25px 20px",intro);
   S.nl.forEach((a,i)=>h+=art(a,"nl",i)); h+=foot(S.footerNL);
-  if(S.showEN!==false){
-  h+=row("#F2EFED","28px 4px 8px 4px",`<p style="${txt(12,"#555555",16,"margin: 0; letter-spacing: 1px;")}"><a name="english" id="english" style="${txt(12,"#555555",16)} letter-spacing: 1px; text-decoration: none;"><font color="#555555"><span style="${txt(12,"#555555",16)} letter-spacing: 1px;">${esc((S.enLabel||"English").toUpperCase())}</span></font></a></p>`);
-  h+=row("#FFFFFF","10px 20px 0 20px",top("en"))+row("#FFFFFF","10px 20px 15px 20px",head)+row("#FFFFFF","20px 20px",toc(S.en,"en"));
-  S.en.forEach((a,i)=>h+=art(a,"en",i)); h+=foot(S.footerEN);
+  if(en){
+    h+=row("#F2EFED","28px 4px 8px 4px",`<p style="${txt(12,"#555555",16,"margin: 0; letter-spacing: 1px;")}"><a name="english" id="english" style="${txt(12,"#555555",16)} letter-spacing: 1px; text-decoration: none;"><font color="#555555"><span style="${txt(12,"#555555",16)} letter-spacing: 1px;">${esc((S.enLabel||"English").toUpperCase())}</span></font></a></p>`);
+    h+=row("#FFFFFF","10px 20px 0 20px",top("en"))+row("#FFFFFF","10px 20px 15px 20px",head)+row("#FFFFFF","20px 20px",toc(S.en,"en"));
+    S.en.forEach((a,i)=>h+=art(a,"en",i)); h+=foot(S.footerEN);
   }
   return h+"</table>";
 }
 function outerTable(inner){
   return `<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F2EFED" style="width: 100%; background: #F2EFED; background-color: #F2EFED; border-collapse: collapse;"><tr><td align="center" bgcolor="#F2EFED" style="background: #F2EFED; background-color: #F2EFED; padding: 30px 10px;">${inner}</td></tr></table>`;
 }
-function exportHTML(withData=true,web=false){
+function exportHTML(withData=true){
   const data=btoa(unescape(encodeURIComponent(JSON.stringify(S))));
   return `<!doctype html><html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -705,9 +869,9 @@ ${withData?`<!--HRMAMZINE-DATA:${data}-->`:""}
 </body></html>`;
 }
 
-/* ================= acties ================= */
+/* ================= versies ================= */
 const isoDate=d=>{ const x=new Date(d); return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0") };
-const safe=t=>(t||"HRMAM-zine").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"_");
+const safe=t=>(t||"HRMAM-zine").normalize("NFKD").replace(/[̀-ͯ]/g,"").replace(/[^\w\- ]+/g,"").trim().replace(/\s+/g,"_");
 const fileFor=(subject,v,ts,ext)=>`${safe(subject)}_${isoDate(ts)}_v${v}${ext}`;
 async function saveVersion(silent){
   await writeNow();
@@ -718,87 +882,101 @@ async function saveVersion(silent){
   if(!silent) toast(`Opgeslagen: ${S.title} · v${v}`);
   return meta.last;
 }
-// versie voor een download: nieuwe versie als er iets veranderd is, anders de huidige
 async function versionForExport(){
   const same=meta.last && subjKey(meta.last.subject)===subjKey(S.title) && meta.last.hash===hash(JSON.stringify(S));
   return same ? meta.last : await saveVersion(true);
 }
-const fname=ext=>{ const l=meta.last; return fileFor(S.title, l&&subjKey(l.subject)===subjKey(S.title)?l.v:0, Date.now(), ext) };
 $("#verSaveBtn").onclick=()=>saveVersion();
-document.addEventListener("keydown",e=>{ if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="s"){ e.preventDefault(); saveVersion() } },true);
 async function showVersions(){
   const all=(await verAll()).sort((a,b)=>b.ts-a.ts);
   const fmt=ts=>new Date(ts).toLocaleString("nl-NL",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
   $("#verBody").innerHTML=all.length?all.map(x=>`<tr><td>${esc(x.subject)}</td><td><b>v${x.v}</b></td><td>${fmt(x.ts)}</td>
-    <td style="white-space:nowrap"><button type="button" data-vo="${x.id}">Openen</button> <button type="button" data-vd="${x.id}" title="Download als HTML">⬇</button> <button type="button" data-vx="${x.id}" title="Verwijder deze versie">🗑</button></td></tr>`).join("")
-    : `<tr><td colspan="4" class="sum">Nog geen versies. Klik op 💾 Opslaan als versie (of Ctrl+S).</td></tr>`;
+    <td style="white-space:nowrap"><button class="tool" type="button" data-vo="${x.id}">Openen</button> <button class="tool" type="button" data-vd="${x.id}">Download</button> <button class="tool" type="button" data-vx="${x.id}" style="color:var(--danger)">Verwijder</button></td></tr>`).join("")
+    : `<tr><td colspan="4" class="sum">Nog geen versies. Klik op Opslaan als versie (of Ctrl+S).</td></tr>`;
   $("#verBody").onclick=async e=>{
     const b=e.target.closest("button"); if(!b) return;
     const id=+(b.dataset.vo||b.dataset.vd||b.dataset.vx), x=all.find(y=>y.id===id); if(!x) return;
-    if(b.dataset.vo){ snap(); S=JSON.parse(x.data); normImgs(); meta.last={subject:x.subject,v:x.v,hash:hash(JSON.stringify(S)),ts:x.ts}; await kvSet("meta",meta); render(); save(); $("#verDlg").close(); toast(`Geopend: ${x.subject} · v${x.v}`) }
-    if(b.dataset.vd){ const keep=S; S=JSON.parse(x.data); const html=exportHTML(); S=keep; download(new Blob([html],{type:"text/html"}),fileFor(x.subject,x.v,x.ts,".html")) }
+    if(b.dataset.vo){ snap(); S=JSON.parse(x.data); normImgs(); active=null; meta.last={subject:x.subject,v:x.v,hash:hash(JSON.stringify(S)),ts:x.ts}; await kvSet("meta",meta); render(); save(); $("#verDlg").close(); toast(`Geopend: ${x.subject} · v${x.v}`) }
+    if(b.dataset.vd){ const keep=S; S=JSON.parse(x.data); normDefaults(); const html=exportHTML(); S=keep; download(new Blob([html],{type:"text/html"}),fileFor(x.subject,x.v,x.ts,".html")) }
     if(b.dataset.vx){ if(confirm(`Versie v${x.v} van "${x.subject}" verwijderen?`)){ await verDel(id); showVersions() } }
   };
   if(!$("#verDlg").open) $("#verDlg").showModal();
 }
 $("#verListBtn").onclick=showVersions;
+
+/* ================= versturen / exporteren ================= */
 function download(blob,name){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),3000) }
-$("#dlBtn").onclick=async()=>{ const l=await versionForExport(); download(new Blob([exportHTML()],{type:"text/html"}),fileFor(S.title,l.v,Date.now(),".html")); toast(`HTML gedownload (v${l.v}) — later weer te openen via 📂 Open`) };
-$("#srcBtn").onclick=async()=>{
-  const t=exportHTML(false);
-  try{ await navigator.clipboard.writeText(t) }catch(e){ const ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove() }
-  toast(/src="data:/.test(t)?"Broncode gekopieerd — let op: geüploade foto's zitten erin ingebakken":"Broncode gekopieerd");
-};
-$("#copyBtn").onclick=async()=>{
-  const html=outerTable(mailTable());
-  const done=()=>toast("Gekopieerd — plak in Outlook en kies bij Plakopties: Bronopmaak behouden");
-  try{
-    await navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([document.querySelector(".mail").innerText],{type:"text/plain"})})]);
-    done();
-  }catch(e){
-    const box=document.createElement("div"); box.style.cssText="position:fixed;left:-9999px;top:0"; box.innerHTML=html; document.body.appendChild(box);
-    const r=document.createRange(); r.selectNodeContents(box); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r);
-    document.execCommand("copy"); box.remove(); sel.removeAllRanges(); done();
-  }
-};
-/* .eml-concept: foto's gaan mee als ingesloten bijlagen (cid), zodat Outlook ze toont */
 function b64bytes(bytes){ let bin=""; for(let i=0;i<bytes.length;i+=0x8000) bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000)); return btoa(bin).replace(/.{76}/g,"$&\r\n") }
 function mimeWord(str){ return "=?UTF-8?B?"+b64bytes(new TextEncoder().encode(str)).replace(/\r\n/g,"")+"?=" }
-$("#emlBtn").onclick=async()=>{
-  const ver=await versionForExport();
-  let html=exportHTML(false); const parts=[]; let n=0;
-  html=html.replace(/src="data:(image\/[a-z]+);base64,([^"]+)"/g,(m,type,b64)=>{ n++; const cid=`foto${n}@hrmamzine`; parts.push({type,b64,cid,name:`foto${n}.${type.split("/")[1].replace("jpeg","jpg")}`}); return `src="cid:${cid}"` });
-  const B="----=_HRMAMZINE_"+Date.now();
-  const L=["X-Unsent: 1","To: ","Subject: "+mimeWord(S.title),"MIME-Version: 1.0"];
-  const htmlPart=["Content-Type: text/html; charset=UTF-8","Content-Transfer-Encoding: base64","",b64bytes(new TextEncoder().encode(html))];
-  if(!parts.length){ L.push(...htmlPart,"") }
-  else{
-    L.push(`Content-Type: multipart/related; boundary="${B}"; type="text/html"`,"","--"+B,...htmlPart);
-    parts.forEach(p=>L.push("--"+B,`Content-Type: ${p.type}; name="${p.name}"`,"Content-Transfer-Encoding: base64",`Content-ID: <${p.cid}>`,`Content-Disposition: inline; filename="${p.name}"`,"",p.b64.replace(/.{76}/g,"$&\r\n")));
-    L.push("--"+B+"--","");
+const EXP={
+  async copy(){
+    const html=outerTable(mailTable());
+    const done=()=>toast("Gekopieerd — plak met Cmd/Ctrl+V in een nieuwe mail");
+    try{ await navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([$(".mail").innerText],{type:"text/plain"})})]); done() }
+    catch(e){
+      const box=document.createElement("div"); box.style.cssText="position:fixed;left:-9999px;top:0"; box.innerHTML=html; document.body.appendChild(box);
+      const r=document.createRange(); r.selectNodeContents(box); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      document.execCommand("copy"); box.remove(); sel.removeAllRanges(); done();
+    }
+  },
+  async eml(){
+    const ver=await versionForExport();
+    let html=exportHTML(false); const parts=[]; let n=0;
+    html=html.replace(/src="data:(image\/[a-z]+);base64,([^"]+)"/g,(m,type,b64)=>{ n++; const cid=`foto${n}@hrmamzine`; parts.push({type,b64,cid,name:`foto${n}.${type.split("/")[1].replace("jpeg","jpg")}`}); return `src="cid:${cid}"` });
+    const B="----=_HRMAMZINE_"+Date.now();
+    const L=["X-Unsent: 1","To: ","Subject: "+mimeWord(S.title),"MIME-Version: 1.0"];
+    const htmlPart=["Content-Type: text/html; charset=UTF-8","Content-Transfer-Encoding: base64","",b64bytes(new TextEncoder().encode(html))];
+    if(!parts.length){ L.push(...htmlPart,"") }
+    else{
+      L.push(`Content-Type: multipart/related; boundary="${B}"; type="text/html"`,"","--"+B,...htmlPart);
+      parts.forEach(p=>L.push("--"+B,`Content-Type: ${p.type}; name="${p.name}"`,"Content-Transfer-Encoding: base64",`Content-ID: <${p.cid}>`,`Content-Disposition: inline; filename="${p.name}"`,"",p.b64.replace(/.{76}/g,"$&\r\n")));
+      L.push("--"+B+"--","");
+    }
+    download(new Blob([L.join("\r\n")],{type:"message/rfc822"}),fileFor(S.title,ver.v,Date.now(),".eml"));
+    toast(`Gedownload (v${ver.v}) — dubbelklik om in de Outlook-app te openen`);
+  },
+  async html(){ const l=await versionForExport(); download(new Blob([exportHTML()],{type:"text/html"}),fileFor(S.title,l.v,Date.now(),".html")); toast(`HTML gedownload (v${l.v}) — later te openen via Editie openen`) },
+  async src(){
+    const t=exportHTML(false);
+    try{ await navigator.clipboard.writeText(t) }catch(e){ const ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove() }
+    toast(/src="data:/.test(t)?"Broncode gekopieerd — let op: geüploade foto's zitten erin ingebakken":"Broncode gekopieerd");
+  },
+  pdf(){
+    const w=window.open("","_blank"); if(!w){ toast("Pop-up geblokkeerd — sta pop-ups toe voor deze pagina"); return }
+    const html=exportHTML(false).replace("</head>",`<style>@page{size:A4;margin:10mm}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}</style></head>`)
+      .replace("</body>",`<script>document.title=${JSON.stringify(safe(S.title))};window.onload=()=>setTimeout(()=>print(),400)<\/script></body>`);
+    w.document.open(); w.document.write(html); w.document.close();
+    toast("Kies in het printvenster: Opslaan als PDF");
   }
-  download(new Blob([L.join("\r\n")],{type:"message/rfc822"}),fileFor(S.title,ver.v,Date.now(),".eml"));
-  toast(`Gedownload (v${ver.v}) — dubbelklik het .eml-bestand, Outlook opent een nieuwe mail`);
 };
+const menu=$("#sendMenu"), sendBtn=$("#sendBtn");
+function closeMenu(){ menu.classList.remove("open"); sendBtn.setAttribute("aria-expanded","false") }
+sendBtn.onclick=e=>{ e.stopPropagation(); const o=!menu.classList.contains("open"); menu.classList.toggle("open",o); sendBtn.setAttribute("aria-expanded",String(o)) };
+document.addEventListener("click",e=>{ if(!e.target.closest(".menuwrap")) closeMenu() });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeMenu() });
+document.addEventListener("click",e=>{ const b=e.target.closest("[data-exp]"); if(!b) return; closeMenu(); EXP[b.dataset.exp]() });
+
+/* ================= bestand openen ================= */
 $("#openBtn").onclick=()=>$("#fileIn").click();
 $("#fileIn").onchange=e=>{
   const f=e.target.files[0]; if(!f) return;
   f.text().then(t=>{
     const m=t.match(/<!--HRMAMZINE-DATA:([A-Za-z0-9+/=]+)-->/);
     if(!m){ toast("Dit bestand komt niet uit deze editor"); return }
-    try{ snap(); S=JSON.parse(decodeURIComponent(escape(atob(m[1])))); normImgs(); render(); save(); toast("Editie geopend: "+S.title) }
+    try{ snap(); S=JSON.parse(decodeURIComponent(escape(atob(m[1])))); normImgs(); active=null; render(); save(); toast("Editie geopend: "+S.title) }
     catch(err){ toast("Kon bestand niet lezen") }
   });
   e.target.value="";
 };
-/* ---------- templates per doelgroep ---------- */
+
+/* ================= templates ================= */
 const MAANDEN=["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"];
 const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
 const fillDate=t=>{ const d=new Date(); return String(t||"").replace(/\{maand\}/g,MAANDEN[d.getMonth()]).replace(/\{month\}/g,MONTHS[d.getMonth()]).replace(/\{jaar\}/g,d.getFullYear()) };
 const toPlaceholders=t=>String(t||"").replace(new RegExp("\\b("+MAANDEN.join("|")+")\\s+(20\\d\\d)\\b","i"),"{maand} {jaar}").replace(new RegExp("\\b("+MONTHS.join("|")+")\\s+(20\\d\\d)\\b"),"{month} {jaar}");
 function blankArts(lang){ return [0,1,2].map(i=>({toc:lang==="nl"?"Artikel "+(i+1):"Article "+(i+1),title:lang==="nl"?"Titel artikel "+(i+1):"Article title "+(i+1),color:COLORS[(i+(lang==="en"?3:0))%4],bg:BGS[(i+(lang==="en"?1:0))%2],body:lang==="nl"?"<p>Tekst van het artikel…</p>":"<p>Article text…</p>"})) }
 const BUILTIN={id:"builtin-hrmam",name:"HRMAM-zine · leidinggevenden",desc:"Standaard: NL + EN, drie lege artikelen per taal.",builtin:true,
-  data:Object.assign(structuredClone(DEFAULT),{title:"HRMAM-zine {maand} {jaar}",onlineUrl:"",nl:blankArts("nl"),en:blankArts("en"),showEN:true,utm:false,utmV:2,enLabel:"English"})};
+  data:Object.assign(structuredClone(DEFAULT),{title:"HRMAM-zine {maand} {jaar}",onlineUrl:"",nl:blankArts("nl"),en:blankArts("en"),showEN:true,enLabel:"English"})};
 async function getTpls(){ try{ return (await kvGet("templates"))||[] }catch(e){ return [] } }
 async function setTpls(l){ await kvSet("templates",l) }
 async function showTpls(){
@@ -808,10 +986,10 @@ async function showTpls(){
       <div class="small">${esc(t.desc||"")}</div>
       <div class="small">${d.showEN===false?"Alleen NL":"NL + EN"} · ${d.nl.length} artikel${d.nl.length===1?"":"en"} · titel: <i>${esc(d.title)}</i></div>
       <div class="dots">${cols.map(c=>`<i style="background:${c}"></i>`).join("")}</div>
-      <div class="row2"><button type="button" class="primary" data-tu="${t.id}">Gebruiken</button>${t.builtin?"":`<button type="button" data-te="${t.id}" title="Exporteer om te delen met collega's">⬇ Delen</button><button type="button" data-tx="${t.id}" title="Verwijder template">🗑</button>`}</div></div>` }).join("");
+      <div class="row2"><button class="tool primary" type="button" data-tu="${t.id}">Gebruiken</button>${t.builtin?"":`<button class="tool" type="button" data-te="${t.id}">Delen</button><button class="tool" type="button" data-tx="${t.id}" style="color:var(--danger)">Verwijder</button>`}</div></div>` }).join("");
   $("#tplList").onclick=async e=>{
     const b=e.target.closest("button"); if(!b) return; const id=b.dataset.tu||b.dataset.te||b.dataset.tx; const t=list.find(x=>x.id===id); if(!t) return;
-    if(b.dataset.tu){ snap(); S=structuredClone(t.data); S.title=fillDate(S.title); S.preheader=fillDate(S.preheader); S.enLabel=fillDate(S.enLabel); S.template=t.name; normImgs(); render(); save(); $("#tplDlg").close(); window.scrollTo({top:0,behavior:"smooth"}); toast(`Nieuwe editie op basis van “${t.name}”`) }
+    if(b.dataset.tu){ snap(); S=structuredClone(t.data); S.title=fillDate(S.title); S.preheader=fillDate(S.preheader); S.enLabel=fillDate(S.enLabel); S.template=t.name; normImgs(); active=null; render(); save(); $("#tplDlg").close(); window.scrollTo({top:0,behavior:"smooth"}); toast(`Nieuwe editie op basis van “${t.name}”`) }
     if(b.dataset.te){ download(new Blob([JSON.stringify({hrmamzineTemplate:1,...t},null,1)],{type:"application/json"}),"template_"+safe(t.name)+".json") }
     if(b.dataset.tx){ if(confirm(`Template “${t.name}” verwijderen?`)){ await setTpls((await getTpls()).filter(x=>x.id!==id)); showTpls() } }
   };
@@ -842,14 +1020,15 @@ $("#tplFile").onchange=async e=>{
     t.id=ex?ex.id:"tpl-"+Date.now(); await setTpls(ex?l.map(x=>x.id===ex.id?t:x):[...l,t]); toast(`Template “${t.name}” geïmporteerd`); showTpls() }
   catch(err){ toast("Dit is geen geldig template-bestand") }
 };
-$("#resetBtn").onclick=()=>{ if(confirm("Terug naar het voorbeeld (september 2026)? (Ongedaan maken kan altijd)")){ snap(); S=structuredClone(DEFAULT); normImgs(); render(); save() } };
+$("#resetBtn").onclick=()=>{ if(confirm("Terug naar de voorbeeldeditie (september 2026)? (Ongedaan maken kan altijd)")){ snap(); S=structuredClone(DEFAULT); normImgs(); active=null; render(); save() } };
 
+/* ================= start ================= */
 async function init(){
   let cur=null;
   try{ cur=await kvGet("current"); meta=(await kvGet("meta"))||meta }catch(e){}
-  if(!cur){ try{ cur=JSON.parse(localStorage.getItem(KEY)) }catch(e){} }   // oude opslag overnemen
+  if(!cur){ try{ cur=JSON.parse(localStorage.getItem(KEY)) }catch(e){} }
   if(cur) S=cur;
-  normImgs(); render(); ubtn(); status();
+  normImgs(); render(); ubtn(); linkPanel(null);
   if(cur) writeNow();
   try{ navigator.storage && navigator.storage.persist && navigator.storage.persist() }catch(e){}
 }
