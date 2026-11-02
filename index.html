@@ -114,7 +114,7 @@ svg{flex:none}
 .bxtag{position:absolute;top:4px;right:6px;font:600 10px Inter,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#8A949E;background:rgba(255,255,255,.85);padding:2px 6px;border-radius:4px;opacity:0;transition:.15s;pointer-events:none}
 .bx:hover .bxtag,.bx.active .bxtag{opacity:1}
 .bf:empty::before{content:attr(data-ph);color:#9AA4AE;font-style:italic}
-.bf a{color:inherit;text-decoration:underline}
+.bx .bf a{color:var(--a,inherit);text-decoration:underline}
 .two{display:flex;gap:0}
 .mail.mobile .two{flex-direction:column;gap:14px}
 .mail.mobile .two > div{border-left:0!important;padding-left:0!important;padding-right:0!important}
@@ -156,6 +156,10 @@ svg{flex:none}
 .art .b ul,.art .b ol{margin:0 0 16px;padding-left:22px}
 .art .b::after{content:"";display:table;clear:both}
 .b img{max-width:100%;height:auto;cursor:pointer}
+.art .b a.btn{display:inline-block;padding:12px 22px;border-radius:4px;background:var(--bb,var(--c));color:var(--bf,#fff);text-decoration:none;font-weight:bold;font-size:15px;line-height:20px;margin:4px 0 2px}
+.art .b a.btn[data-v="B"]{background:transparent;border:2px solid var(--bb,var(--c));color:var(--bb,var(--c));padding:10px 20px}
+.art .b a.btn[data-v="C"]{display:block;text-align:center;border-radius:0;padding:14px 20px}
+.art .b a.btn[data-v="C"]::after{content:" ›"}
 .b img[align=left]{float:left;margin:4px 20px 14px 0}
 .b img[align=right]{float:right;margin:4px 0 14px 20px}
 .b img:not([align]){display:block;margin:6px auto 18px}
@@ -237,7 +241,7 @@ dialog::backdrop{background:rgba(16,24,40,.4)}
   <div class="logo" aria-hidden="true">Z</div>
   <div class="ttl">
     <b id="hTitle">HRMAM-zine</b>
-    <small><span class="dot" id="dot"></span><span id="savedTxt">opgeslagen</span><span class="ver">editor v02-11 #16</span></small>
+    <small><span class="dot" id="dot"></span><span id="savedTxt">opgeslagen</span><span class="ver">editor v02-11 #18</span></small>
   </div>
   <div class="sp"></div>
   <button class="tool icon" id="undoBtn" type="button" aria-label="Ongedaan maken (Ctrl+Z)" title="Ongedaan maken (Ctrl+Z)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 010 10h-3"/></svg></button>
@@ -347,6 +351,8 @@ dialog::backdrop{background:rgba(16,24,40,.4)}
         <button class="tool" type="button" id="lkOpen">Openen</button>
         <button class="tool" type="button" id="lkDel">Verwijderen</button>
       </div>
+      <div id="lkBtn" style="margin-top:12px"></div>
+      <button class="tool wide" type="button" id="btnIns" style="margin-top:10px">Knop invoegen in artikel</button>
     </div>
     <div id="pImg">
       <p class="pt">Foto</p>
@@ -538,7 +544,7 @@ document.addEventListener("keydown",e=>{
 },true);
 
 /* ================= paste sanitizer ================= */
-const ALLOWED = {P:[],BR:[],STRONG:[],B:[],EM:[],I:[],A:["href"],H3:[],UL:[],OL:[],LI:[],IMG:["src","alt","align","width","data-credit"]};
+const ALLOWED = {P:[],BR:[],STRONG:[],B:[],EM:[],I:[],A:["href","class","data-v","style"],H3:[],UL:[],OL:[],LI:[],IMG:["src","alt","align","width","data-credit"]};
 function clean(html){
   const doc = new DOMParser().parseFromString(html,"text/html");
   const walk = (node,out)=>{
@@ -551,7 +557,7 @@ function clean(html){
       if(ALLOWED[tag]){
         const el=document.createElement(tag);
         ALLOWED[tag].forEach(a=>{ if(n.getAttribute(a)) el.setAttribute(a,n.getAttribute(a)) });
-        if(tag==="A") el.setAttribute("target","_blank");
+        if(tag==="A"){ el.setAttribute("target","_blank"); if(!/\bbtn\b/.test(el.getAttribute("class")||"")){ el.removeAttribute("class"); el.removeAttribute("style"); el.removeAttribute("data-v") } else el.setAttribute("class","btn") }
         if(tag==="IMG" && !el.getAttribute("width")) el.setAttribute("width","250");
         walk(n,el); out.appendChild(el);
       } else if(!/^(SCRIPT|STYLE|META|LINK|TITLE|O:P)$/.test(tag)) walk(n,out);
@@ -597,13 +603,13 @@ function render(){
   h+=`<div class="blk intro"><div contenteditable data-g="introNL">${S.introNL}</div>${en?`<p class="enb" title="Staat er automatisch zolang de Engelse versie aan staat"><a href="#secEN" data-go="secEN">English below</a></p>`:""}</div>`;
   h+=insLine("nl",0); S.nl.forEach((a,i)=>h+=itemHTML("nl",a,i)+insLine("nl",i+1));
   h+=`<button class="add" type="button" data-add="nl">+ Nederlands artikel toevoegen</button>`;
-  h+=`<div class="footer" contenteditable data-g="footerNL">${S.footerNL}</div>`;
+  h+=hasColofon("nl")?"":`<div class="footer" contenteditable data-g="footerNL">${S.footerNL}</div>`;
   if(en){
     h+=`<div class="sec ed" id="secEN" lang="en" contenteditable data-plain data-g="enLabel" title="Dit label staat ook zo in de mail">${esc(S.enLabel)}</div>`;
     h+=header("en");
     h+=insLine("en",0); S.en.forEach((a,i)=>h+=itemHTML("en",a,i)+insLine("en",i+1));
     h+=`<button class="add" type="button" data-add="en">+ English article</button>`;
-    h+=`<div class="footer" lang="en" contenteditable data-g="footerEN">${S.footerEN}</div>`;
+    h+=hasColofon("en")?"":`<div class="footer" lang="en" contenteditable data-g="footerEN">${S.footerEN}</div>`;
   }
   h+=`</div>`;
   $("#canvas").innerHTML=h;
@@ -758,7 +764,42 @@ function linkPanel(a){
   $("#lkOpen").disabled=!a; $("#lkDel").disabled=!a;
   const is=a?linkIssue(h):"";
   $("#lkMsg").innerHTML=a?(is?`<span class="warn">Let op: ${esc(is)}</span>`:`<span class="okt">Link ziet er goed uit</span>`):"";
+  const inArt=a && a.closest(".art .b");
+  if(a && a.classList.contains("btn") && inArt){
+    const art=a.closest(".art"), it=S[art.dataset.lang][+art.dataset.i], v=a.dataset.v||"A";
+    const bg=a.style.getPropertyValue("--bb").trim()||it.color, fg=a.style.getPropertyValue("--bf").trim()||"#ffffff";
+    $("#lkLab").textContent="Knop “"+a.textContent.trim().slice(0,40)+"” — tekst pas je aan in de knop zelf";
+    $("#lkBtn").innerHTML=`<p class="pt sub">Knopstijl</p><div class="btns">${[["A","Gevuld"],["B","Omlijnd"],["C","Volle breedte"]].map(([k,n])=>`<button class="tool${v===k?" on":""}" type="button" data-btv="${k}">${n}</button>`).join("")}</div>
+      <div class="chips" style="margin-top:10px">${chip("k:bb","Knop",bg)}${v!=="B"?chip("k:bf","Tekst op knop",fg):""}</div>
+      <button class="tool" type="button" id="btnToLink" style="margin-top:8px">Omzetten naar gewone link</button>`;
+  } else if(a && inArt){
+    $("#lkBtn").innerHTML=`<button class="tool" type="button" id="linkToBtn">Maak er een knop van</button>`;
+  } else $("#lkBtn").innerHTML="";
 }
+$("#lkBtn").addEventListener("click",e=>{
+  const b=e.target.closest("button"); const a=curLink; if(!b||!a||!document.contains(a)) return; const ed=a.closest("[contenteditable]");
+  if(b.dataset.btv){ snap(); a.dataset.v=b.dataset.btv; sync(ed); linkPanel(a); return }
+  if(b.dataset.chip){ const k=b.dataset.chip.slice(2); const art=a.closest(".art"), it=S[art.dataset.lang][+art.dataset.i];
+    openPal(b,a.style.getPropertyValue("--"+k).trim()||(k==="bb"?it.color:"#ffffff"),c=>{ snap(); a.style.setProperty("--"+k,c); sync(ed); linkPanel(a) }); return }
+  if(b.id==="btnToLink"){ snap(); a.classList.remove("btn"); if(!a.className) a.removeAttribute("class"); a.removeAttribute("data-v"); a.removeAttribute("style"); sync(ed); linkPanel(a); return }
+  if(b.id==="linkToBtn"){ snap(); a.classList.add("btn"); a.dataset.v="A"; sync(ed); linkPanel(a) }
+});
+$("#btnIns").onclick=()=>{
+  restore(); const ce=lastRange && editableOf(lastRange.startContainer);
+  let body=ce && ce.classList.contains("b") ? ce : null;
+  if(!body){ const art=active&&document.getElementById(active.lang+active.i); if(art && art.classList.contains("art")){ body=art.querySelector(".b"); const r=document.createRange(); r.selectNodeContents(body); r.collapse(false); const s=getSelection(); s.removeAllRanges(); s.addRange(r) } }
+  if(!body){ toast("Klik eerst in de tekst van een artikel, op de plek waar de knop moet komen"); return }
+  snap(); const lang=body.closest(".art").dataset.lang;
+  // knop als eigen regel ónder de alinea waar de cursor staat (zoals hij ook in de mail komt)
+  const sel=getSelection(); let node=sel.rangeCount?sel.anchorNode:null; node=node&&(node.nodeType===1?node:node.parentElement);
+  let blk=node&&node!==body&&body.contains(node)?node:null; while(blk && blk.parentElement!==body) blk=blk.parentElement;
+  const pEl=document.createElement("p"), a=document.createElement("a");
+  a.className="btn"; a.dataset.v="A"; a.href="https://"; a.target="_blank"; a.textContent=lang==="en"?"Register":"Aanmelden"; pEl.appendChild(a);
+  if(blk) blk.after(pEl); else body.appendChild(pEl);
+  { const r=document.createRange(); r.selectNodeContents(a); const sl=getSelection(); sl.removeAllRanges(); sl.addRange(r); lastRange=r.cloneRange() }
+  sync(body); if(a){ linkPanel(a); setTimeout(()=>{ $("#lkUrl").focus(); $("#lkUrl").select() },50) }
+  toast("Knop ingevoegd — vul rechts de link in en pas de tekst aan in de knop");
+};
 function applyLink(){
   const u=$("#lkUrl").value.trim(); if(!u){ toast("Vul eerst een adres in"); return }
   if(curLink && document.contains(curLink)){ snap(); curLink.setAttribute("href",u); curLink.setAttribute("target","_blank"); sync(curLink.closest("[contenteditable]")); linkPanel(curLink); toast("Link bijgewerkt"); return }
@@ -968,13 +1009,15 @@ $("#brandBtn").onclick=showBrand;
 /* ================= blokken ================= */
 const isBlock=a=>!!a&&a.type==="block";
 const isArt=a=>!!a&&a.type!=="block";
+const hasColofon=lang=>S[lang].some(a=>isBlock(a)&&a.kind==="colofon");
 const BK={
   button:{name:"Knop",icon:'<rect x="3" y="8" width="18" height="8" rx="2"/>',variants:{A:"Gevuld",B:"Omlijnd",C:"Volle breedte"},roles:{btnBg:"Knop",btnText:"Tekst op knop",accent:"Titel",text:"Tekst",bg:"Achtergrond"}},
   agenda:{name:"Agenda",icon:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',variants:{A:"Datumblokjes",B:"Lijst"},roles:{accent:"Kop & datums",tileText:"Tekst in datumblok",text:"Tekst",bg:"Achtergrond"}},
   quote:{name:"Citaat",icon:'<path d="M7 7h4v4c0 3-2 5-4 6M15 7h4v4c0 3-2 5-4 6"/>',variants:{A:"Groot citaat",B:"Gekleurd vlak"},roles:{accent:"Aanhalingsteken / vlak",onAccent:"Tekst op vlak",text:"Tekst",bg:"Achtergrond"}},
-  contact:{name:"Contact",icon:'<circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',variants:{A:"Met foto",B:"Twee contactpunten"},roles:{accent:"Namen & links",text:"Tekst",bg:"Achtergrond"}},
+  contact:{name:"Contact",icon:'<circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',variants:{A:"Met foto",B:"Zonder foto (blok)"},roles:{accent:"Namen & links",text:"Tekst",bg:"Achtergrond"}},
   alert:{name:"Let op",icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16v1"/>',variants:null,roles:{accent:"Icoon & kop",box:"Kader",text:"Tekst",bg:"Achtergrond"}},
   news:{name:"Kort nieuws",icon:'<path d="M4 6h3M4 12h3M4 18h3M10 6h10M10 12h10M10 18h10"/>',variants:null,roles:{accent:"Kop & links",text:"Tekst",bg:"Achtergrond"}},
+  colofon:{name:"Colofon",icon:'<path d="M4 17h16M7 13h10M9 9h6"/>',variants:null,roles:{accent:"Links",text:"Tekst",bg:"Achtergrond"}},
   cols:{name:"Twee kolommen",icon:'<rect x="3" y="5" width="8" height="14" rx="1"/><rect x="13" y="5" width="8" height="14" rx="1"/>',variants:null,roles:{accent:"Kop links",accent2:"Kop rechts",text:"Tekst",bg:"Achtergrond"}}
 };
 function newBlock(kind,lang){
@@ -986,7 +1029,7 @@ function newBlock(kind,lang){
       {wd:W("wo","Wed"),d:"3",m:W("dec","Dec"),title:W("Training sociale veiligheid","Social safety training"),info:W("09.30–12.30 uur · online","9.30 am–12.30 pm · online")}]};
     b.colors={accent:"#3b2171",tileText:"#ffffff",text:"#333333",bg:"#ffffff"} }
   if(kind==="quote"){ b.data={text:W("Citaat of uitspraak.","Quote or statement."),name:W("[Naam]","[Name]"),role:W("[Functie]","[Role]")}; b.colors={accent:"#0077b3",onAccent:"#ffffff",text:"#1f2933",bg:"#ffffff"} }
-  if(kind==="contact"){ b.data={label:W("Vragen? Neem contact op","Questions? Get in touch"),name:W("[Naam contactpersoon]","[Contact name]"),role:W("HR-adviseur","HR advisor"),mail:"[naam]@vu.nl",phone:"020 598 [xxxx]",photo:"",
+  if(kind==="contact"){ b.data={label:W("Vragen? Neem contact op","Questions? Get in touch"),name:W("[Naam contactpersoon]","[Contact name]"),role:W("HR-adviseur","HR advisor"),mail:"[naam]@vu.nl",phone:"020 598 [xxxx]",photo:"",count:2,
       cols:[{title:"HRM Servicedesk",text:W("Servicedesk-portaal<br>ma–vr 9–17 uur","Service desk portal<br>Mon–Fri 9 am–5 pm")},{title:W("Vertrouwenspersonen","Confidential counsellors"),text:W("Anoniem en vertrouwelijk","Anonymous and confidential")}]};
     b.colors={accent:"#0077b3",text:"#333333",bg:"#faf7f5"} }
   if(kind==="alert"){ b.data={title:W("Let op: deadline","Please note: deadline"),text:W("Korte toelichting met de belangrijkste actie.","Short explanation with the key action.")}; b.colors={accent:"#cc4100",box:"#fcd3b6",text:"#333333",bg:"#ffffff"} }
@@ -994,8 +1037,10 @@ function newBlock(kind,lang){
     b.colors={accent:"#0077b3",text:"#333333",bg:"#faf7f5"} }
   if(kind==="cols"){ b.data={cols:[{img:"",title:W("Titel links","Left title"),text:W("Korte tekst.","Short text."),link:W("Lees meer ›","Read more ›"),url:""},{img:"",title:W("Titel rechts","Right title"),text:W("Korte tekst.","Short text."),link:W("Lees meer ›","Read more ›"),url:""}]};
     b.colors={accent:"#008053",accent2:"#3b2171",text:"#333333",bg:"#ffffff"} }
+  if(kind==="colofon"){ b.data={text:stripTags(en?S.footerEN:S.footerNL)}; b.colors={accent:"#0077b3",text:"#333333",bg:"#f2efed"} }
   return b;
 }
+const stripTags=h=>{ const d=document.createElement("div"); d.innerHTML=h||""; d.querySelectorAll("*:not(a):not(strong):not(b):not(em):not(i):not(br)").forEach(x=>x.replaceWith(...x.childNodes)); return d.innerHTML };
 const getPath=(o,p)=>p.split(".").reduce((x,k)=>x==null?x:x[k],o);
 const setPath=(o,p,v)=>{ const ks=p.split("."), last=ks.pop(); const t=ks.reduce((x,k)=>x[k],o); t[last]=v };
 // bewerkbaar veld in het canvas
@@ -1018,12 +1063,12 @@ function blockHTML(lang,b,i){
   }
   if(b.kind==="quote"){
     inner= b.variant==="B"
-      ? `<div style="background:${c.accent};color:${c.onAccent};padding:28px 30px">${ef("text",d.text,{rich:1,block:1,ph:"Citaat",style:"font-size:20px;line-height:30px;font-style:italic;margin-bottom:12px"})}<div style="font-size:14px;line-height:20px">${ef("name",d.name,{ph:"Naam"})}, ${ef("role",d.role,{ph:"Functie"})}</div></div>`
+      ? `<div style="background:${c.accent};color:${c.onAccent};--a:${c.onAccent};padding:28px 30px">${ef("text",d.text,{rich:1,block:1,ph:"Citaat",style:"font-size:20px;line-height:30px;font-style:italic;margin-bottom:12px"})}<div style="font-size:14px;line-height:20px">${ef("name",d.name,{ph:"Naam"})}, ${ef("role",d.role,{ph:"Functie"})}</div></div>`
       : `<div style="padding:5px 20px"><div style="font-family:Georgia,serif;font-size:64px;line-height:40px;color:${c.accent}">“</div>${ef("text",d.text,{rich:1,block:1,ph:"Citaat",style:"font-size:22px;line-height:33px;margin-bottom:14px"})}<div style="font-size:14px;line-height:20px;opacity:.85"><strong>${ef("name",d.name,{ph:"Naam"})}</strong> · ${ef("role",d.role,{ph:"Functie"})}</div></div>`;
   }
   if(b.kind==="contact"){
     inner= b.variant==="B"
-      ? `<div class="two">${d.cols.map((cl,k)=>`<div style="flex:1 1 50%;padding:6px ${k?0:16}px 6px ${k?16:0}px;${k?"border-left:1px solid #E5E0DC;":""}font-size:15px;line-height:23px">${ef(`cols.${k}.title`,cl.title,{block:1,ph:"Titel",style:`font-weight:bold;color:${c.accent};margin-bottom:4px`})}${ef(`cols.${k}.text`,cl.text,{rich:1,block:1,ph:"Gegevens"})}</div>`).join("")}</div>`
+      ? `<div class="two">${d.cols.slice(0,d.count===1?1:2).map((cl,k)=>`<div style="flex:1 1 50%;padding:6px ${k||d.count===1?0:16}px 6px ${k?16:0}px;${k?"border-left:1px solid #E5E0DC;":""}font-size:15px;line-height:23px">${ef(`cols.${k}.title`,cl.title,{block:1,ph:"Titel",style:`font-weight:bold;color:${c.accent};margin-bottom:4px`})}${ef(`cols.${k}.text`,cl.text,{rich:1,block:1,ph:"Gegevens"})}</div>`).join("")}</div>`
       : `<div style="display:flex;gap:20px;align-items:center">${d.photo?`<img src="${esc(d.photo)}" alt="" style="flex:0 0 96px;width:96px;height:96px;border-radius:50%;object-fit:cover">`:`<div style="flex:0 0 96px;height:96px;border-radius:50%;background:#E1DDD9;display:flex;align-items:center;justify-content:center;font:500 11px Inter,system-ui,sans-serif;color:#5B6673;text-align:center">geen foto<br>(optioneel)</div>`}
          <div style="font-size:15px;line-height:23px">${ef("label",d.label,{block:1,ph:"Kopregel",style:"font-size:14px;line-height:20px;font-weight:bold;opacity:.85"})}${ef("name",d.name,{block:1,ph:"Naam",style:"font-size:18px;line-height:26px;font-weight:bold"})}${ef("role",d.role,{block:1,ph:"Functie"})}<div><span style="color:${c.accent};text-decoration:underline">${ef("mail",d.mail,{ph:"e-mail"})}</span> · ${ef("phone",d.phone,{ph:"telefoon"})}</div></div></div>`;
   }
@@ -1034,11 +1079,14 @@ function blockHTML(lang,b,i){
     inner=ef("title",d.title,{block:1,ph:"Kop",style:`font-size:28px;line-height:40px;color:${c.accent};margin-bottom:14px`})
       +d.items.map((it,k)=>`<div style="padding:12px 0;border-top:1px solid #E5E0DC;${k===d.items.length-1?"border-bottom:1px solid #E5E0DC;":""}font-size:15px;line-height:23px">${ef(`items.${k}.title`,it.title,{ph:"Kop",style:"font-weight:bold"})} — ${ef(`items.${k}.text`,it.text,{rich:1,ph:"Tekst met eventueel een link"})}</div>`).join("");
   }
+  if(b.kind==="colofon"){
+    inner=ef("text",d.text,{rich:1,block:1,ph:"Colofon-tekst",style:"font-size:13px;line-height:18px;text-align:center"});
+  }
   if(b.kind==="cols"){
-    inner=`<div class="two" style="gap:20px">${d.cols.map((cl,k)=>{ const ac=k?c.accent2:c.accent; return `<div style="flex:1 1 0;display:flex;flex-direction:column;gap:8px;min-width:0">${cl.img?`<img src="${esc(cl.img)}" alt="" style="width:100%;height:auto;display:block">`:`<div style="height:120px;background:#E1DDD9;display:flex;align-items:center;justify-content:center;font:500 11px Inter,system-ui,sans-serif;color:#5B6673">foto (optioneel)</div>`}
+    inner=`<div class="two" style="gap:20px">${d.cols.map((cl,k)=>{ const ac=k?c.accent2:c.accent; return `<div style="flex:1 1 0;display:flex;flex-direction:column;gap:8px;min-width:0;--a:${ac}">${cl.img?`<img src="${esc(cl.img)}" alt="" style="width:100%;height:auto;display:block">`:`<div style="height:120px;background:#E1DDD9;display:flex;align-items:center;justify-content:center;font:500 11px Inter,system-ui,sans-serif;color:#5B6673">foto (optioneel)</div>`}
       ${ef(`cols.${k}.title`,cl.title,{block:1,ph:"Titel",style:`font-size:20px;line-height:28px;color:${ac}`})}${ef(`cols.${k}.text`,cl.text,{rich:1,block:1,ph:"Tekst",style:"font-size:15px;line-height:23px"})}${cl.url?`<div style="font-size:15px;font-weight:bold;color:${ac}">${ef(`cols.${k}.link`,cl.link,{ph:"Lees meer ›"})}</div>`:""}</div>` }).join("")}</div>`;
   }
-  return `<div class="blk bx${on?" active":""}" lang="${lang}" spellcheck="false" id="${lang}${i}" data-lang="${lang}" data-i="${i}" style="background:${c.bg};color:${c.text}"><span class="bxtag">${BK[b.kind].name}${b.variant&&BK[b.kind].variants?" · "+BK[b.kind].variants[b.variant]:""}</span>${inner}</div>`;
+  return `<div class="blk bx${on?" active":""}" lang="${lang}" spellcheck="false" id="${lang}${i}" data-lang="${lang}" data-i="${i}" style="background:${c.bg};color:${c.text};--a:${c.accent}"><span class="bxtag">${BK[b.kind].name}${b.variant&&BK[b.kind].variants?" · "+BK[b.kind].variants[b.variant]:""}</span>${inner}</div>`;
 }
 function itemHTML(lang,a,i){ return isBlock(a)?blockHTML(lang,a,i):artHTML(lang,a,i) }
 const insLine=(lang,at)=>`<div class="ins"><button type="button" data-ins="${lang}:${at}">+ Blok invoegen</button></div>`;
@@ -1057,19 +1105,52 @@ function openBlkDlg(lang,at){
 async function getMyBlocks(){ try{ return (await kvGet("blocks"))||[] }catch(e){ return [] } }
 async function renderMyBlocks(){
   const l=await getMyBlocks();
-  $("#myBlocks").innerHTML=l.length?l.map(x=>`<div class="mb"><button type="button" class="tool" data-myb="${x.id}" style="flex:1;justify-content:flex-start">${esc(x.name)} <span class="small" style="margin-left:auto">${BK[x.block.kind]?BK[x.block.kind].name:""}</span></button><button type="button" class="tool icon" data-mybx="${x.id}" aria-label="Verwijder standaardblok ${esc(x.name)}" style="color:var(--danger)">✕</button></div>`).join("")
+  $("#myBlocks").innerHTML=l.length?l.map(x=>`<div class="mb"><button type="button" class="tool" data-myb="${x.id}" style="flex:1;justify-content:flex-start">${esc(x.name)} <span class="small" style="margin-left:auto">${(()=>{ const k=(x.nl||x.block||{}).kind; return (BK[k]?BK[k].name:"")+(x.en?" · NL + EN":" · NL") })()}</span></button><button type="button" class="tool icon" data-mybx="${x.id}" aria-label="Verwijder standaardblok ${esc(x.name)}" style="color:var(--danger)">✕</button></div>`).join("")
     : `<span class="small">Nog geen standaardblokken. Pas een blok aan en kies rechts “Opslaan als standaardblok”.</span>`;
 }
-function insertBlock(b){
-  snap(); const {lang,at}=insAt||{lang:"nl",at:S.nl.length};
+const otherLang=l=>l==="nl"?"en":"nl";
+const pairOf=b=>{ if(!b||!b.pair) return null; const l=S.nl.includes(b)?"en":"nl"; return S[l].find(x=>x!==b&&x.pair===b.pair)||null };
+// tegenhanger in de andere taal: zelfde stijl, kleuren en foto's; teksten in die taal
+function counterpart(b,lang){
+  const o=newBlock(b.kind,lang);
+  o.variant=b.variant; o.colors={...b.colors}; o.inToc=b.inToc;
+  if(b.kind==="contact"){ o.data.count=b.data.count; o.data.photo=b.data.photo; o.data.mail=b.data.mail; o.data.phone=b.data.phone; o.data.name=b.data.name }
+  if(b.kind==="cols") o.data.cols.forEach((c,k)=>{ c.img=b.data.cols[k].img; c.url=b.data.cols[k].url });
+  if(b.kind==="button") o.data.url=b.data.url;
+  if(b.kind==="agenda"||b.kind==="news"){ while(o.data.items.length<b.data.items.length) o.data.items.push(structuredClone(o.data.items[o.data.items.length-1])); o.data.items.length=b.data.items.length;
+    if(b.kind==="agenda") o.data.items.forEach((it,k)=>{ it.d=b.data.items[k].d }) }
+  return o;
+}
+// plek in de andere taal die overeenkomt met positie 'at'
+function mapPos(lang,at,ol,kind){
+  if(kind==="colofon") return S[ol].length;
+  const L=S[lang], O=S[ol];
+  for(let k=at-1;k>=0;k--){ const x=L[k];
+    if(isBlock(x)&&x.pair){ const j=O.findIndex(y=>y.pair===x.pair); if(j>=0) return j+1 }
+    if(isArt(x)){ const n=L.slice(0,k+1).filter(isArt).length; let c=0; for(let j=0;j<O.length;j++){ if(isArt(O[j])&&++c===n){ let q=j+1; while(q<O.length&&isBlock(O[q])&&!O[q].pair) q++; return q } } return O.length } }
+  return 0;
+}
+function insertBlock(b,other){
+  snap(); let {lang,at}=insAt||{lang:"nl",at:S.nl.length};
+  if(b.kind==="colofon") at=S[lang].length;
+  const both=S.showEN!==false, ol=otherLang(lang);
+  if(both){ b.pair="p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); const o=other||counterpart(b,ol); o.pair=b.pair; const j=mapPos(lang,at,ol,b.kind); S[ol].splice(j,0,o) }
   S[lang].splice(at,0,b); active={lang,i:at}; $("#blkDlg").close(); render(); save();
   const el=document.getElementById(lang+at); if(el) el.scrollIntoView({behavior:"smooth",block:"center"});
-  toast(`${BK[b.kind].name} ingevoegd — pas teksten aan in het blok, de rest rechts`);
+  toast(`${BK[b.kind].name} ingevoegd${both?" — ook in het "+(ol==="en"?"Engelse":"Nederlandse")+" deel":""}. Pas teksten aan in het blok, de rest rechts`);
+}
+// stijl (variant, kleuren, foto's, aantal) gelijk houden met de andere taal
+function syncPair(b){ const o=pairOf(b); if(!o) return; const c=counterpart(b,"x");
+  o.variant=b.variant; o.colors={...b.colors}; o.inToc=b.inToc;
+  if(b.kind==="contact"){ o.data.count=b.data.count; o.data.photo=b.data.photo }
+  if(b.kind==="cols") o.data.cols.forEach((cc,k)=>{ cc.img=b.data.cols[k].img });
+  if(b.kind==="agenda"||b.kind==="news"){ const L=o.data.items; while(L.length<b.data.items.length) L.push(structuredClone(L[L.length-1]||c.data.items[0])); L.length=b.data.items.length }
 }
 $("#blkTiles").addEventListener("click",e=>{ const t=e.target.closest("[data-kind]"); if(t) insertBlock(newBlock(t.dataset.kind,(insAt||{}).lang||"nl")) });
+const stdVersions=it=>{ const nl=it.nl||it.block, en=it.en||counterpart(it.nl||it.block,"en"); return {nl,en} };
 $("#myBlocks").addEventListener("click",async e=>{
   const u=e.target.closest("[data-myb]"), x=e.target.closest("[data-mybx]"); const l=await getMyBlocks();
-  if(u){ const it=l.find(y=>y.id===u.dataset.myb); if(it) insertBlock(structuredClone(it.block)) }
+  if(u){ const it=l.find(y=>y.id===u.dataset.myb); if(it){ const v=stdVersions(it), lang=(insAt||{}).lang||"nl"; insertBlock(structuredClone(v[lang]),structuredClone(v[otherLang(lang)])) } }
   if(x){ const it=l.find(y=>y.id===x.dataset.mybx); if(it && confirm(`Standaardblok “${it.name}” verwijderen?`)){ await kvSet("blocks",l.filter(y=>y.id!==it.id)); renderMyBlocks() } }
 });
 $("#addBlk").onclick=()=>openBlkDlg();
@@ -1078,8 +1159,11 @@ $("#addBlk").onclick=()=>openBlkDlg();
 function panelBlock(b){
   const k=BK[b.kind], d=b.data;
   let h=`<p class="pt">Blok · ${k.name}</p>`;
+  const o=pairOf(b); if(S.showEN!==false) h+=o?`<div class="small" style="margin:-4px 0 10px">Gekoppeld aan de ${active.lang==="nl"?"Engelse":"Nederlandse"} versie: stijl en kleuren lopen gelijk, teksten vul je per taal in. <a href="#" id="goPair">Ga naar ${active.lang==="nl"?"Engelse":"Nederlandse"} versie ›</a></div>`
+    :`<div class="small" style="margin:-4px 0 10px">Dit blok heeft nog geen ${active.lang==="nl"?"Engelse":"Nederlandse"} versie. <a href="#" id="mkPair">Maak ${active.lang==="nl"?"Engelse":"Nederlandse"} versie ›</a></div>`;
   if(k.variants) h+=`<p class="pt sub">Variant</p><div class="btns">${Object.entries(k.variants).map(([v,n])=>`<button class="tool${b.variant===v?" on":""}" type="button" data-bvar="${v}">${n}</button>`).join("")}</div>`;
   if(b.kind==="button") h+=`<label class="small" for="bUrl" style="display:block;margin-top:14px">Link van de knop</label><input type="text" id="bUrl" data-bpath="url" value="${esc(d.url||"")}" placeholder="https://…" style="margin-top:6px"><div id="bUrlMsg" style="margin-top:4px"></div>`;
+  if(b.kind==="contact" && b.variant==="B") h+=`<p class="pt sub" style="margin-top:14px">Aantal</p><div class="btns"><button class="tool${d.count===1?" on":""}" type="button" data-bcount="1">1 persoon</button><button class="tool${d.count!==1?" on":""}" type="button" data-bcount="2">2 personen</button></div>`;
   if(b.kind==="contact" && b.variant!=="B") h+=`<p class="pt sub" style="margin-top:14px">Foto</p><div class="btns"><button class="tool" type="button" data-bimg="photo">${d.photo?"Andere foto":"Foto kiezen"}</button>${d.photo?`<button class="tool" type="button" data-bimgx="photo">Verwijderen</button>`:""}</div>`;
   if(b.kind==="cols") d.cols.forEach((cl,i)=>{ h+=`<p class="pt sub" style="margin-top:14px">Kolom ${i?"rechts":"links"}</p><div class="btns"><button class="tool" type="button" data-bimg="cols.${i}.img">${cl.img?"Andere foto":"Foto kiezen"}</button>${cl.img?`<button class="tool" type="button" data-bimgx="cols.${i}.img">Foto weg</button>`:""}</div><input type="text" data-bpath="cols.${i}.url" value="${esc(cl.url||"")}" placeholder="Link “Lees meer” (leeg = geen link)" style="margin-top:8px">` });
   if(b.kind==="agenda"||b.kind==="news") h+=`<p class="pt sub" style="margin-top:14px">Regels (${d.items.length})</p><div class="btns"><button class="tool" type="button" data-brow="add">+ Regel</button><button class="tool" type="button" data-brow="del"${d.items.length<2?" disabled":""}>− Laatste regel</button></div>`;
@@ -1096,20 +1180,25 @@ $("#pBlk").addEventListener("input",e=>{ const b=curBlock(); if(!b) return; cons
   if(t.dataset.bpath){ snapTyping(); setPath(b.data,t.dataset.bpath,t.value.trim()); save(); if(/^cols\.\d\.url$/.test(t.dataset.bpath)) refreshBlock() }
   if(t.id==="bTocL"){ snapTyping(); b.toc=t.value; $$(`.toc a[data-go="${active.lang}${active.i}"]`).forEach(x=>x.textContent=t.value); save() }
 });
-$("#pBlk").addEventListener("change",e=>{ const b=curBlock(); if(!b) return; if(e.target.id==="bToc"){ snap(); b.inToc=e.target.checked; if(b.inToc && !b.toc) b.toc=b.data.title||BK[b.kind].name; render(); save() } });
+$("#pBlk").addEventListener("change",e=>{ const b=curBlock(); if(!b) return; if(e.target.id==="bToc"){ snap(); b.inToc=e.target.checked; if(b.inToc && !b.toc) b.toc=b.data.title||BK[b.kind].name; syncPair(b); const o=pairOf(b); if(o&&o.inToc&&!o.toc) o.toc=o.data.title||BK[o.kind].name; render(); save() } });
 $("#pBlk").addEventListener("click",async e=>{
-  const b=curBlock(); const t=e.target.closest("button"); if(!b||!t) return;
-  if(t.dataset.bvar){ snap(); b.variant=t.dataset.bvar; render(); save(); return }
-  if(t.dataset.chip){ const role=t.dataset.chip.slice(2); openPal(t,b.colors[role],c=>{ snap(); b.colors[role]=c; render(); save() }); return }
-  if(t.dataset.brow){ snap(); if(t.dataset.brow==="add"){ const last=b.data.items[b.data.items.length-1]; b.data.items.push(structuredClone(last)) } else b.data.items.pop(); render(); save(); return }
-  if(t.dataset.bimg){ pickImage(src=>{ snap(); setPath(b.data,t.dataset.bimg,src); render(); save() }); return }
-  if(t.dataset.bimgx){ snap(); setPath(b.data,t.dataset.bimgx,""); render(); save(); return }
+  const b=curBlock();
+  if(b && e.target.closest("#goPair")){ e.preventDefault(); const o=pairOf(b), ol=otherLang(active.lang); if(o){ const j=S[ol].indexOf(o), el=document.getElementById(ol+j); if(el){ setActive(el); el.scrollIntoView({behavior:"smooth",block:"center"}) } } return }
+  if(b && e.target.closest("#mkPair")){ e.preventDefault(); snap(); const ol=otherLang(active.lang); b.pair=b.pair||"p"+Date.now().toString(36); const o=counterpart(b,ol); o.pair=b.pair; S[ol].splice(mapPos(active.lang,active.i+1,ol,b.kind),0,o); render(); save(); toast("Versie in de andere taal toegevoegd"); return }
+  const t=e.target.closest("button"); if(!b||!t) return;
+  if(t.dataset.bvar){ snap(); b.variant=t.dataset.bvar; syncPair(b); render(); save(); return }
+  if(t.dataset.bcount){ snap(); b.data.count=+t.dataset.bcount; syncPair(b); render(); save(); return }
+  if(t.dataset.chip){ const role=t.dataset.chip.slice(2); openPal(t,b.colors[role],c=>{ snap(); b.colors[role]=c; syncPair(b); render(); save() }); return }
+  if(t.dataset.brow){ snap(); if(t.dataset.brow==="add"){ const last=b.data.items[b.data.items.length-1]; b.data.items.push(structuredClone(last)) } else b.data.items.pop(); syncPair(b); render(); save(); return }
+  if(t.dataset.bimg){ pickImage(src=>{ snap(); setPath(b.data,t.dataset.bimg,src); syncPair(b); render(); save() }); return }
+  if(t.dataset.bimgx){ snap(); setPath(b.data,t.dataset.bimgx,""); syncPair(b); render(); save(); return }
   if(t.id==="bSaveStd"){
     const name=prompt("Naam voor dit standaardblok (bijv. “Contact HR-adviseur Jan”):",(b.kind==="contact"?b.data.name:BK[b.kind].name)); if(!name||!name.trim()) return;
     const l=await getMyBlocks(); const ex=l.find(x=>x.name.toLowerCase()===name.trim().toLowerCase());
     if(ex && !confirm(`“${ex.name}” bestaat al. Overschrijven?`)) return;
-    const it={id:ex?ex.id:"b-"+Date.now(),name:name.trim(),block:JSON.parse(JSON.stringify(b))};
-    await kvSet("blocks",ex?l.map(x=>x.id===ex.id?it:x):[...l,it]); toast(`Opgeslagen als standaardblok “${it.name}” — invoegen via + Blok toevoegen`); return }
+    const lang=active.lang, o=pairOf(b)||counterpart(b,otherLang(lang)), clean=x=>{ const y=JSON.parse(JSON.stringify(x)); delete y.pair; return y };
+    const it={id:ex?ex.id:"b-"+Date.now(),name:name.trim(),nl:clean(lang==="nl"?b:o),en:clean(lang==="en"?b:o)};
+    await kvSet("blocks",ex?l.map(x=>x.id===ex.id?it:x):[...l,it]); toast(`Standaardblok “${it.name}” opgeslagen in het Nederlands én Engels — invoegen via + Blok toevoegen`); return }
   if(t.dataset.a) itemOp(t.dataset.a);
 });
 function refreshBlock(){ const el=active&&document.getElementById(active.lang+active.i); const b=curBlock(); if(el&&b){ const tmp=document.createElement("div"); tmp.innerHTML=blockHTML(active.lang,b,active.i); el.replaceWith(tmp.firstElementChild) } }
@@ -1117,8 +1206,8 @@ function itemOp(op){
   if(!active) return; const L=S[active.lang], i=active.i;
   if(op==="up"){ if(i===0) return; snap(); [L[i-1],L[i]]=[L[i],L[i-1]]; active.i=i-1 }
   else if(op==="down"){ if(i>=L.length-1) return; snap(); [L[i+1],L[i]]=[L[i],L[i+1]]; active.i=i+1 }
-  else if(op==="dup"){ snap(); L.splice(i+1,0,structuredClone(L[i])); active.i=i+1 }
-  else if(op==="del"){ const nm=isBlock(L[i])?"Blok “"+BK[L[i].kind].name+"”":L[i].title; if(!confirm("Verwijderen?\n\n"+nm+"\n\n(Ongedaan maken kan altijd)")) return; snap(); L.splice(i,1); active=null }
+  else if(op==="dup"){ snap(); const cp=structuredClone(L[i]); delete cp.pair; L.splice(i+1,0,cp); active.i=i+1 }
+  else if(op==="del"){ const it=L[i], o=isBlock(it)?pairOf(it):null; const nm=isBlock(it)?"Blok “"+BK[it.kind].name+"”"+(o?" (Nederlands én Engels)":""):it.title; if(!confirm("Verwijderen?\n\n"+nm+"\n\n(Ongedaan maken kan altijd)")) return; snap(); if(o){ const ol=otherLang(active.lang); S[ol].splice(S[ol].indexOf(o),1) } L.splice(i,1); active=null }
   else return;
   render(); save();
   if(active){ const el=document.getElementById(active.lang+active.i); if(el) el.scrollIntoView({behavior:"smooth",block:"nearest"}) }
@@ -1141,7 +1230,14 @@ function inlineRich(html,color){
   d.querySelectorAll("span").forEach(x=>x.removeAttribute("style"));
   d.querySelectorAll("strong,b").forEach(x=>x.setAttribute("style","font-weight: bold;"));
   d.querySelectorAll("a").forEach(a=>{ a.setAttribute("style",`${OF} color: ${color}; text-decoration: underline;`); a.setAttribute("target","_blank") });
+  d.querySelectorAll("[data-btndone]").forEach(a=>a.removeAttribute("data-btndone"));
   return d.innerHTML.replace(/(<br>\s*)+$/,"");
+}
+function btnHTML(v,bg,fg,label,url,blockBg){
+  url=esc(url||"#"); label=esc(label||"");
+  if(v==="C") return `<table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="width: 100%; border-collapse: collapse;"><tr><td align="center" bgcolor="${bg}" style="background-color: ${bg}; padding: 14px 20px;"><a href="${url}" target="_blank" data-btndone="1" style="${txt(15,fg,20)} font-weight: bold; text-decoration: none; display: block;"><span style="${txt(15,fg,20)} font-weight: bold;">${label} &#8250;</span></a></td></tr></table>`;
+  if(v==="B") return `<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse: separate;"><tr><td${blockBg?` bgcolor="${blockBg}"`:""} style="${blockBg?`background-color: ${blockBg}; `:""}border: 2px solid ${bg}; border-radius: 4px; padding: 10px 20px;"><a href="${url}" target="_blank" data-btndone="1" style="${txt(15,bg,20)} font-weight: bold; text-decoration: none;"><span style="${txt(15,bg,20)} font-weight: bold;">${label}</span></a></td></tr></table>`;
+  return `<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse: separate;"><tr><td bgcolor="${bg}" style="background-color: ${bg}; border-radius: 4px; padding: 12px 22px;"><a href="${url}" target="_blank" data-btndone="1" style="${txt(15,fg,20)} font-weight: bold; text-decoration: none;"><span style="${txt(15,fg,20)} font-weight: bold;">${label}</span></a></td></tr></table>`;
 }
 function blockMail(b,lang,i){
   const c=b.colors, d=b.data, anchor=`<a name="${lang}-artikel-${i+1}" id="${lang}-artikel-${i+1}"></a>`, T=(s,col,lh,x="")=>txt(s,col||c.text,lh,x);
@@ -1149,11 +1245,8 @@ function blockMail(b,lang,i){
   const tbl=(inner,x="")=>`<table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="width: 100%; border-collapse: collapse;${x}">${inner}</table>`;
   let h="";
   if(b.kind==="button"){
-    const url=esc(d.url||"#"), label=esc(d.label||"");
     h+=head(d.title,24,32)+(d.text?`<p style="${T(16,null,26,"margin: 0 0 16px 0;")}">${inlineRich(d.text,c.accent)}</p>`:"");
-    if(b.variant==="C") h+=tbl(`<tr><td align="center" bgcolor="${c.btnBg}" style="background-color: ${c.btnBg}; padding: 14px 20px;"><a href="${url}" target="_blank" style="${txt(15,c.btnText,20)} font-weight: bold; text-decoration: none; display: block;"><span style="${txt(15,c.btnText,20)} font-weight: bold;">${label} &#8250;</span></a></td></tr>`);
-    else if(b.variant==="B") h+=`<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse: separate;"><tr><td bgcolor="${c.bg}" style="background-color: ${c.bg}; border: 2px solid ${c.btnBg}; border-radius: 4px; padding: 10px 20px;"><a href="${url}" target="_blank" style="${txt(15,c.btnBg,20)} font-weight: bold; text-decoration: none;"><span style="${txt(15,c.btnBg,20)} font-weight: bold;">${label}</span></a></td></tr></table>`;
-    else h+=`<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse: separate;"><tr><td bgcolor="${c.btnBg}" style="background-color: ${c.btnBg}; border-radius: 4px; padding: 12px 22px;"><a href="${url}" target="_blank" style="${txt(15,c.btnText,20)} font-weight: bold; text-decoration: none;"><span style="${txt(15,c.btnText,20)} font-weight: bold;">${label}</span></a></td></tr></table>`;
+    h+=btnHTML(b.variant||"A",c.btnBg,c.btnText,d.label,d.url,c.bg);
   }
   if(b.kind==="agenda"){
     h+=head(d.title);
@@ -1165,7 +1258,7 @@ function blockMail(b,lang,i){
     else h+=anchor+`<p style="font-family: Georgia, serif; font-size: 64px; line-height: 40px; color: ${c.accent}; margin: 0; mso-line-height-rule: exactly;">&#8220;</p><p style="${T(22,null,33,"margin: 0 0 14px 0;")}">${inlineRich(d.text,c.accent)}</p><p style="${T(14,null,20,"margin: 0;")}"><strong style="font-weight: bold;">${esc(d.name)}</strong>${d.role?" · "+esc(d.role):""}</p>`;
   }
   if(b.kind==="contact"){
-    if(b.variant==="B") h+=anchor+tbl(`<tr>${d.cols.map((cl,k)=>`<td class="stack" width="50%" valign="top" style="width: 50%; ${T(15,null,23)} padding: 6px ${k?0:16}px 6px ${k?16:0}px;${k?" border-left: 1px solid #E5E0DC;":""}"><p style="${T(15,c.accent,23,"margin: 0 0 4px 0; font-weight: bold;")}">${esc(cl.title)}</p>${inlineRich(cl.text,c.accent)}</td>`).join("")}</tr>`);
+    if(b.variant==="B") h+=anchor+tbl(`<tr>${d.cols.slice(0,d.count===1?1:2).map((cl,k)=>`<td class="stack" width="${d.count===1?"100%":"50%"}" valign="top" style="width: ${d.count===1?"100%":"50%"}; ${T(15,null,23)} padding: 6px ${k||d.count===1?0:16}px 6px ${k?16:0}px;${k?" border-left: 1px solid #E5E0DC;":""}"><p style="${T(15,c.accent,23,"margin: 0 0 4px 0; font-weight: bold;")}">${esc(cl.title)}</p>${inlineRich(cl.text,c.accent)}</td>`).join("")}</tr>`);
     else h+=anchor+tbl(`<tr>${d.photo?`<td width="96" valign="middle" style="width: 96px; padding: 0 20px 0 0;"><img src="${esc(d.photo)}" width="96" height="96" alt="${esc(d.name)}" style="display: block; width: 96px; height: 96px; border-radius: 48px; border: 0;"></td>`:""}<td valign="middle" style="${T(15,null,23)}">${d.label?`<p style="${T(14,null,20,"margin: 0 0 2px 0; font-weight: bold;")}">${esc(d.label)}</p>`:""}<p style="${T(18,null,26,"margin: 0; font-weight: bold;")}">${esc(d.name)}</p>${d.role?`<p style="${T(15,null,23,"margin: 0;")}">${esc(d.role)}</p>`:""}<p style="${T(15,null,23,"margin: 0;")}">${d.mail?`<a href="mailto:${esc(d.mail)}" style="${OF} color: ${c.accent}; text-decoration: underline;">${esc(d.mail)}</a>`:""}${d.mail&&d.phone?" · ":""}${esc(d.phone||"")}</p></td></tr>`);
   }
   if(b.kind==="alert"){
@@ -1173,6 +1266,9 @@ function blockMail(b,lang,i){
   }
   if(b.kind==="news"){
     h+=head(d.title)+tbl(d.items.map((it,k)=>`<tr><td style="${T(15,null,23)} padding: 12px 0; border-top: 1px solid #E5E0DC;${k===d.items.length-1?" border-bottom: 1px solid #E5E0DC;":""}"><strong style="font-weight: bold;">${esc(it.title)}</strong> &#8212; ${inlineRich(it.text,c.accent)}</td></tr>`).join(""));
+  }
+  if(b.kind==="colofon"){
+    h+=anchor+`<p style="${T(13,null,18,"margin: 0; text-align: center;")}">${inlineRich(d.text,c.accent)}</p>`;
   }
   if(b.kind==="cols"){
     h+=anchor+tbl(`<tr>${d.cols.map((cl,k)=>{ const ac=k?c.accent2:c.accent; return `<td class="stack" width="50%" valign="top" style="width: 50%; padding: 0 ${k?0:10}px 0 ${k?10:0}px;">${cl.img?`<img src="${esc(cl.img)}" width="290" alt="" style="display: block; width: 100%; max-width: 290px; height: auto; border: 0; margin: 0 0 10px 0;">`:""}<p style="${T(20,ac,28,"margin: 4px 0 8px 0;")}">${esc(cl.title)}</p><p style="${T(15,null,23,"margin: 0 0 8px 0;")}">${inlineRich(cl.text,ac)}</p>${cl.url?`<p style="${T(15,ac,23,"margin: 0;")}"><a href="${esc(cl.url)}" target="_blank" style="${OF} color: ${ac}; font-weight: bold; text-decoration: none;">${esc(cl.link||"Lees meer ›")}</a></p>`:""}</td>` }).join("")}</tr>`);
@@ -1201,7 +1297,7 @@ function styleIssues(){
     const sp=txt.match(/\w\s+[,.;:!?](\s|$)/g); if(sp) add(where,go,"Spatie vóór leesteken",sp.slice(0,3).join("  ·  ").trim());
     if((txt.match(/!/g)||[]).length>2) add(where,go,"Veel uitroeptekens","");
     const d=document.createElement("div"); d.innerHTML=a.body;
-    d.querySelectorAll("a").forEach(l=>{ const t=l.textContent.trim(); if(VAGUE.test(t)) add(where,go,`Linktekst “${t}” zegt weinig — beschrijf waar de link heen gaat`,t) });
+    d.querySelectorAll("a").forEach(l=>{ const t=l.textContent.trim(); if(l.classList.contains("btn")){ if(linkIssue(l.getAttribute("href"))) add(where,go,`Knop “${t}” heeft nog geen goede link`,l.getAttribute("href")||"","bad"); return } if(VAGUE.test(t)) add(where,go,`Linktekst “${t}” zegt weinig — beschrijf waar de link heen gaat`,t) });
     d.querySelectorAll("img").forEach(im=>{ if(!im.getAttribute("data-credit")) add(where,go,"Foto zonder bijschrift / bron","","info") });
     const w=words(body).length;
     if(w>=25){
@@ -1314,7 +1410,7 @@ const OF="font-family: Arial, Helvetica, sans-serif;";
 function txt(size,color,lh,extra=""){ return `${OF} font-size: ${size}px; color: ${color}; line-height: ${lh}px; mso-line-height-rule: exactly; ${extra}` }
 const slug=t=>(t||"hrmam-zine").normalize("NFKD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const onlineUrl=()=>S.onlineUrl||"";
-function mailBody(html,color,lang){
+function mailBody(html,color,lang,artBg){
   const d=document.createElement("div"); d.innerHTML=html;
   d.querySelectorAll("[contenteditable]").forEach(x=>x.removeAttribute("contenteditable"));
   d.querySelectorAll("span").forEach(x=>x.removeAttribute("style"));
@@ -1324,7 +1420,16 @@ function mailBody(html,color,lang){
   d.querySelectorAll("ul,ol").forEach(x=>x.setAttribute("style",`${OF} margin: 0 0 16px 0; padding-left: 22px; color: #333333;`));
   d.querySelectorAll("h3").forEach(x=>x.setAttribute("style",txt(18,"#333333",26,"font-weight: bold; margin: 20px 0 10px 0;")));
   d.querySelectorAll("strong,b").forEach(x=>x.setAttribute("style","font-weight: bold;"));
-  d.querySelectorAll("a").forEach(a=>{a.setAttribute("style",`${OF} color: ${color}; text-decoration: underline;`); a.setAttribute("target","_blank")});
+  d.querySelectorAll("a.btn").forEach(a=>{
+    const bg=a.style.getPropertyValue("--bb").trim()||color, fg=a.style.getPropertyValue("--bf").trim()||"#ffffff";
+    const w=document.createElement("div"); w.innerHTML=btnHTML(a.dataset.v||"A",bg,fg,a.textContent.trim(),a.getAttribute("href"),artBg);
+    const t=w.firstElementChild; t.style.margin="4px 0 18px 0";
+    let blk=a; while(blk.parentElement && blk.parentElement!==d) blk=blk.parentElement;
+    if(blk!==a && !blk.textContent.replace(a.textContent,"").trim()) blk.replaceWith(t);   // knop staat alleen in de alinea
+    else if(blk!==a){ a.remove(); blk.after(t) } else a.replaceWith(t);
+  });
+  d.querySelectorAll("a:not([data-btndone])").forEach(a=>{a.setAttribute("style",`${OF} color: ${color}; text-decoration: underline;`); a.setAttribute("target","_blank")});
+  d.querySelectorAll("[data-btndone]").forEach(a=>a.removeAttribute("data-btndone"));
   d.querySelectorAll("img").forEach(i=>{
     const w=Math.min(FULLW,+i.getAttribute("width")||250), al=i.getAttribute("align"), cr=(i.getAttribute("data-credit")||"").trim();
     [...i.attributes].forEach(at=>{ if(!/^(src|alt|width)$/.test(at.name)) i.removeAttribute(at.name) });
@@ -1360,7 +1465,7 @@ function mailTable(){
     ${onlineUrl()?`<td align="right" valign="top" style="${txt(12,"#777777",16)} padding: 0 0 0 12px; white-space: nowrap;"><a href="${esc(onlineUrl())}" target="_blank" style="${txt(12,"#777777",16)} text-decoration: none; white-space: nowrap;">${lang==="nl"?"Online versie":"Online version"} &#8250;</a></td>`:""}</tr></table>`;
   const head=`<a href="${esc(S.logoUrl||LOGO_URL)}" target="_blank"><img src="${LOGO}" alt="logo Vrije Universiteit Amsterdam" height="54" border="0" style="height: 54px; display: block;"></a>`;
   const art=(a,lang,i)=>row(a.bg,"25px 20px 10px 20px",
-    `<p style="${txt(28,a.color,40,"margin: 0 0 24px 0; font-weight: normal;")}"><a name="${lang}-artikel-${i+1}" id="${lang}-artikel-${i+1}" style="${txt(28,a.color,40)} text-decoration: none;">${esc(a.title)}</a></p>${mailBody(a.body,a.color,lang)}<div style="clear: both; font-size: 0; line-height: 0;">&nbsp;</div>`);
+    `<p style="${txt(28,a.color,40,"margin: 0 0 24px 0; font-weight: normal;")}"><a name="${lang}-artikel-${i+1}" id="${lang}-artikel-${i+1}" style="${txt(28,a.color,40)} text-decoration: none;">${esc(a.title)}</a></p>${mailBody(a.body,a.color,lang,a.bg)}<div style="clear: both; font-size: 0; line-height: 0;">&nbsp;</div>`);
   const foot=t=>row("#F2EFED","25px 25px",`<p style="${txt(13,"#333333",18,"margin: 0; text-align: center;")}">${t.replace(/<a /g,`<a style="${OF} color: #0000EE; text-decoration: underline;" `)}</p>`);
   const en=S.showEN!==false;
   let intro=stripEnBelow(S.introNL).replace(/<p[^>]*>/g,`<p style="${txt(16,"#333333",26,"margin: 0;")}">`).replace(/<strong>/g,'<strong style="font-weight: bold;">');
@@ -1370,11 +1475,11 @@ function mailTable(){
   h+=row("#FFFFFF","40px 40px",`<p style="${txt(38,"#333333",50,"margin: 0; font-weight: normal;")}"><span style="${txt(38,"#333333",50)}">${esc(S.title)}</span></p>`);
   h+=row("#FAF7F5","30px 20px 25px 20px",intro);
   const item=(a,lang,i)=>{ if(!isBlock(a)) return art(a,lang,i); const m=blockMail(a,lang,i); return row(m.bg,"25px 20px 25px 20px",m.html) };
-  S.nl.forEach((a,i)=>h+=item(a,"nl",i)); h+=foot(S.footerNL);
+  S.nl.forEach((a,i)=>h+=item(a,"nl",i)); if(!hasColofon("nl")) h+=foot(S.footerNL);
   if(en){
     h+=row("#F2EFED","28px 4px 8px 4px",`<p style="${txt(12,"#555555",16,"margin: 0; letter-spacing: 1px;")}"><a name="english" id="english" style="${txt(12,"#555555",16)} letter-spacing: 1px; text-decoration: none;"><font color="#555555"><span style="${txt(12,"#555555",16)} letter-spacing: 1px;">${esc((S.enLabel||"English").toUpperCase())}</span></font></a></p>`);
     h+=row("#FFFFFF","10px 20px 0 20px",top("en"))+row("#FFFFFF","10px 20px 15px 20px",head)+row("#FFFFFF","20px 20px",toc(S.en,"en"));
-    S.en.forEach((a,i)=>h+=item(a,"en",i)); h+=foot(S.footerEN);
+    S.en.forEach((a,i)=>h+=item(a,"en",i)); if(!hasColofon("en")) h+=foot(S.footerEN);
   }
   return h+"</table>";
 }
