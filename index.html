@@ -116,11 +116,13 @@ svg{flex:none}
 .bf:empty::before{content:attr(data-ph);color:#9AA4AE;font-style:italic}
 .bx .bf a{color:var(--a,inherit);text-decoration:underline}
 .two{display:flex;gap:0}
+.tt td .bf{min-height:22px;word-break:break-word}
 .mail.mobile .two{flex-direction:column;gap:14px}
 .mail.mobile .two > div{border-left:0!important;padding-left:0!important;padding-right:0!important}
-.ins{max-width:650px;margin:0 auto;height:12px;position:relative;display:flex;align-items:center;justify-content:center}
-.ins button{opacity:0;position:relative;z-index:2;height:24px;padding:0 12px;border:0;border-radius:12px;background:var(--accent);color:#fff;font:600 12px Inter,system-ui,sans-serif;transition:.12s}
-.ins::before{content:"";position:absolute;left:0;right:0;top:5px;height:2px;background:var(--accent);opacity:0;transition:.12s}
+.ins{max-width:650px;margin:0 auto;height:0;position:relative;z-index:6}
+.ins::after{content:"";position:absolute;left:0;right:0;top:-9px;height:18px}
+.ins::before{content:"";position:absolute;left:0;right:0;top:-1px;height:2px;background:var(--accent);opacity:0;transition:.12s;pointer-events:none}
+.ins button{position:absolute;left:50%;top:-12px;transform:translateX(-50%);opacity:0;z-index:2;height:24px;padding:0 12px;border:0;border-radius:12px;background:var(--accent);color:#fff;font:600 12px Inter,system-ui,sans-serif;transition:.12s;white-space:nowrap}
 .ins:hover button,.ins:hover::before,.ins button:focus-visible{opacity:1}
 .mail.mobile .ins{max-width:390px}
 .chips{display:flex;flex-direction:column;gap:6px}
@@ -241,7 +243,7 @@ dialog::backdrop{background:rgba(16,24,40,.4)}
   <div class="logo" aria-hidden="true">Z</div>
   <div class="ttl">
     <b id="hTitle">HRMAM-zine</b>
-    <small><span class="dot" id="dot"></span><span id="savedTxt">opgeslagen</span><span class="ver">editor v02-11 #18</span></small>
+    <small><span class="dot" id="dot"></span><span id="savedTxt">opgeslagen</span><span class="ver">editor v10-11 #20</span></small>
   </div>
   <div class="sp"></div>
   <button class="tool icon" id="undoBtn" type="button" aria-label="Ongedaan maken (Ctrl+Z)" title="Ongedaan maken (Ctrl+Z)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 010 10h-3"/></svg></button>
@@ -1009,6 +1011,12 @@ $("#brandBtn").onclick=showBrand;
 /* ================= blokken ================= */
 const isBlock=a=>!!a&&a.type==="block";
 const isArt=a=>!!a&&a.type!=="block";
+const TPAD={s:5,m:9,l:14};
+const tWidths=d=>{ const n=d.rows[0]?d.rows[0].length:1; let w=(d.widths||[]).slice(0,n); while(w.length<n) w.push(100/n); const t=w.reduce((a,b)=>a+(+b||0),0)||1; return w.map(x=>Math.round((+x||0)/t*1000)/10) };
+function tCell(d,c,ri,ci,last){ const hd=d.header&&ri===0, P=TPAD[d.pad||"m"], L=c.line;
+  const bd=d.grid==="a"?`border:1px solid ${L};`:d.grid==="h"?`border-bottom:1px solid ${L};${ri===0?`border-top:1px solid ${L};`:""}`:"";
+  const bg=hd?c.head:(d.zebra && (ri-(d.header?1:0))%2===1 ? c.stripe : "");
+  return {hd,P,bd,bg,col:hd?c.headText:c.text} }
 const hasColofon=lang=>S[lang].some(a=>isBlock(a)&&a.kind==="colofon");
 const BK={
   button:{name:"Knop",icon:'<rect x="3" y="8" width="18" height="8" rx="2"/>',variants:{A:"Gevuld",B:"Omlijnd",C:"Volle breedte"},roles:{btnBg:"Knop",btnText:"Tekst op knop",accent:"Titel",text:"Tekst",bg:"Achtergrond"}},
@@ -1017,6 +1025,7 @@ const BK={
   contact:{name:"Contact",icon:'<circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',variants:{A:"Met foto",B:"Zonder foto (blok)"},roles:{accent:"Namen & links",text:"Tekst",bg:"Achtergrond"}},
   alert:{name:"Let op",icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16v1"/>',variants:null,roles:{accent:"Icoon & kop",box:"Kader",text:"Tekst",bg:"Achtergrond"}},
   news:{name:"Kort nieuws",icon:'<path d="M4 6h3M4 12h3M4 18h3M10 6h10M10 12h10M10 18h10"/>',variants:null,roles:{accent:"Kop & links",text:"Tekst",bg:"Achtergrond"}},
+  table:{name:"Tabel",icon:'<rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 10h18M3 15h18M9 5v14M15 5v14"/>',variants:null,roles:{accent:"Titel & links",head:"Kopregel",headText:"Tekst kopregel",line:"Lijnen",stripe:"Zebra-strepen",text:"Tekst",bg:"Achtergrond"}},
   colofon:{name:"Colofon",icon:'<path d="M4 17h16M7 13h10M9 9h6"/>',variants:null,roles:{accent:"Links",text:"Tekst",bg:"Achtergrond"}},
   cols:{name:"Twee kolommen",icon:'<rect x="3" y="5" width="8" height="14" rx="1"/><rect x="13" y="5" width="8" height="14" rx="1"/>',variants:null,roles:{accent:"Kop links",accent2:"Kop rechts",text:"Tekst",bg:"Achtergrond"}}
 };
@@ -1037,6 +1046,8 @@ function newBlock(kind,lang){
     b.colors={accent:"#0077b3",text:"#333333",bg:"#faf7f5"} }
   if(kind==="cols"){ b.data={cols:[{img:"",title:W("Titel links","Left title"),text:W("Korte tekst.","Short text."),link:W("Lees meer ›","Read more ›"),url:""},{img:"",title:W("Titel rechts","Right title"),text:W("Korte tekst.","Short text."),link:W("Lees meer ›","Read more ›"),url:""}]};
     b.colors={accent:"#008053",accent2:"#3b2171",text:"#333333",bg:"#ffffff"} }
+  if(kind==="table"){ b.data={title:"",rows:[[W("Kolom 1","Column 1"),W("Kolom 2","Column 2"),W("Kolom 3","Column 3")],["","",""],["","",""]],widths:[34,33,33],header:true,zebra:false,tw:100,pad:"m",grid:"h"};
+    b.colors={accent:"#0077b3",head:"#0077b3",headText:"#ffffff",line:"#e5e0dc",stripe:"#faf7f5",text:"#333333",bg:"#ffffff"} }
   if(kind==="colofon"){ b.data={text:stripTags(en?S.footerEN:S.footerNL)}; b.colors={accent:"#0077b3",text:"#333333",bg:"#f2efed"} }
   return b;
 }
@@ -1079,6 +1090,11 @@ function blockHTML(lang,b,i){
     inner=ef("title",d.title,{block:1,ph:"Kop",style:`font-size:28px;line-height:40px;color:${c.accent};margin-bottom:14px`})
       +d.items.map((it,k)=>`<div style="padding:12px 0;border-top:1px solid #E5E0DC;${k===d.items.length-1?"border-bottom:1px solid #E5E0DC;":""}font-size:15px;line-height:23px">${ef(`items.${k}.title`,it.title,{ph:"Kop",style:"font-weight:bold"})} — ${ef(`items.${k}.text`,it.text,{rich:1,ph:"Tekst met eventueel een link"})}</div>`).join("");
   }
+  if(b.kind==="table"){
+    const w=tWidths(d);
+    inner=ef("title",d.title,{block:1,ph:"Titel (optioneel)",style:`font-size:24px;line-height:32px;color:${c.accent};margin-bottom:12px`})
+      +`<div style="width:${d.tw||100}%;overflow-x:auto"><table class="tt" style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup>${w.map(x=>`<col style="width:${x}%">`).join("")}</colgroup>${d.rows.map((r,ri)=>`<tr>${r.map((cell,ci)=>{ const t=tCell(d,c,ri,ci); return `<td style="padding:${t.P}px ${t.P+3}px;${t.bd}${t.bg?`background:${t.bg};`:""}color:${t.col};vertical-align:top;font-size:15px;line-height:22px;${t.hd?"font-weight:bold;":""}--a:${t.hd?c.headText:c.accent}">${ef(`rows.${ri}.${ci}`,cell,{rich:1,block:1,ph:t.hd?"Kop":"…"})}</td>` }).join("")}</tr>`).join("")}</table></div>`;
+  }
   if(b.kind==="colofon"){
     inner=ef("text",d.text,{rich:1,block:1,ph:"Colofon-tekst",style:"font-size:13px;line-height:18px;text-align:center"});
   }
@@ -1090,7 +1106,7 @@ function blockHTML(lang,b,i){
 }
 function itemHTML(lang,a,i){ return isBlock(a)?blockHTML(lang,a,i):artHTML(lang,a,i) }
 const insLine=(lang,at)=>`<div class="ins"><button type="button" data-ins="${lang}:${at}">+ Blok invoegen</button></div>`;
-function blockText(b){ const out=[]; const walk=(o,k)=>{ if(o==null) return; if(typeof o==="string"){ if(!/^(url|img|photo)$/.test(k) && !/^https?:/.test(o)) out.push(plain(o)) } else if(typeof o==="object") Object.entries(o).forEach(([kk,v])=>walk(v,kk)) }; walk(b.data,""); return out.filter(Boolean).join("\n") }
+function blockText(b){ const out=[]; const walk=(o,k)=>{ if(o==null) return; if(typeof o==="string"){ if(!/^(url|img|photo|pad|grid)$/.test(k) && !/^https?:/.test(o)) out.push(plain(o)) } else if(typeof o==="object") Object.entries(o).forEach(([kk,v])=>walk(v,kk)) }; walk(b.data,""); return out.filter(Boolean).join("\n") }
 
 /* ---------- invoegen ---------- */
 let insAt=null;
@@ -1116,6 +1132,9 @@ function counterpart(b,lang){
   o.variant=b.variant; o.colors={...b.colors}; o.inToc=b.inToc;
   if(b.kind==="contact"){ o.data.count=b.data.count; o.data.photo=b.data.photo; o.data.mail=b.data.mail; o.data.phone=b.data.phone; o.data.name=b.data.name }
   if(b.kind==="cols") o.data.cols.forEach((c,k)=>{ c.img=b.data.cols[k].img; c.url=b.data.cols[k].url });
+  if(b.kind==="table"){ const D=b.data, O=structuredClone(D), en=lang==="en";
+    // inhoud overnemen (cijfers en data zijn vaak gelijk); standaard kolomkoppen vertalen
+    O.rows[0]=O.rows[0].map((h,k)=>/^(Kolom|Column) \d+$/.test(h)?(en?"Column ":"Kolom ")+(k+1):h); O.title=""; o.data=O }
   if(b.kind==="button") o.data.url=b.data.url;
   if(b.kind==="agenda"||b.kind==="news"){ while(o.data.items.length<b.data.items.length) o.data.items.push(structuredClone(o.data.items[o.data.items.length-1])); o.data.items.length=b.data.items.length;
     if(b.kind==="agenda") o.data.items.forEach((it,k)=>{ it.d=b.data.items[k].d }) }
@@ -1144,6 +1163,10 @@ function syncPair(b){ const o=pairOf(b); if(!o) return; const c=counterpart(b,"x
   o.variant=b.variant; o.colors={...b.colors}; o.inToc=b.inToc;
   if(b.kind==="contact"){ o.data.count=b.data.count; o.data.photo=b.data.photo }
   if(b.kind==="cols") o.data.cols.forEach((cc,k)=>{ cc.img=b.data.cols[k].img });
+  if(b.kind==="table"){ const D=b.data, O=o.data, nC=D.rows[0].length;
+    O.rows.forEach(r=>{ while(r.length<nC) r.push(""); r.length=nC });
+    while(O.rows.length<D.rows.length) O.rows.push(Array(nC).fill("")); O.rows.length=D.rows.length;
+    ["widths","header","zebra","tw","pad","grid"].forEach(k=>O[k]=structuredClone(D[k])) }
   if(b.kind==="agenda"||b.kind==="news"){ const L=o.data.items; while(L.length<b.data.items.length) L.push(structuredClone(L[L.length-1]||c.data.items[0])); L.length=b.data.items.length }
 }
 $("#blkTiles").addEventListener("click",e=>{ const t=e.target.closest("[data-kind]"); if(t) insertBlock(newBlock(t.dataset.kind,(insAt||{}).lang||"nl")) });
@@ -1166,10 +1189,21 @@ function panelBlock(b){
   if(b.kind==="contact" && b.variant==="B") h+=`<p class="pt sub" style="margin-top:14px">Aantal</p><div class="btns"><button class="tool${d.count===1?" on":""}" type="button" data-bcount="1">1 persoon</button><button class="tool${d.count!==1?" on":""}" type="button" data-bcount="2">2 personen</button></div>`;
   if(b.kind==="contact" && b.variant!=="B") h+=`<p class="pt sub" style="margin-top:14px">Foto</p><div class="btns"><button class="tool" type="button" data-bimg="photo">${d.photo?"Andere foto":"Foto kiezen"}</button>${d.photo?`<button class="tool" type="button" data-bimgx="photo">Verwijderen</button>`:""}</div>`;
   if(b.kind==="cols") d.cols.forEach((cl,i)=>{ h+=`<p class="pt sub" style="margin-top:14px">Kolom ${i?"rechts":"links"}</p><div class="btns"><button class="tool" type="button" data-bimg="cols.${i}.img">${cl.img?"Andere foto":"Foto kiezen"}</button>${cl.img?`<button class="tool" type="button" data-bimgx="cols.${i}.img">Foto weg</button>`:""}</div><input type="text" data-bpath="cols.${i}.url" value="${esc(cl.url||"")}" placeholder="Link “Lees meer” (leeg = geen link)" style="margin-top:8px">` });
+  if(b.kind==="table"){
+    const nR=d.rows.length, nC=d.rows[0].length, w=tWidths(d), seg=(key,opts,cur)=>`<div class="btns">${opts.map(([v,n])=>`<button class="tool${String(cur)===String(v)?" on":""}" type="button" data-bset="${key}:${v}">${n}</button>`).join("")}</div>`;
+    h+=`<p class="pt sub" style="margin-top:4px">Rijen (${nR}) · kolommen (${nC})</p>
+      <div class="btns"><button class="tool" type="button" data-brc="row+">+ Rij</button><button class="tool" type="button" data-brc="row-"${nR<2?" disabled":""}>− Rij</button><button class="tool" type="button" data-brc="col+"${nC>=6?" disabled":""}>+ Kolom</button><button class="tool" type="button" data-brc="col-"${nC<2?" disabled":""}>− Kolom</button></div>
+      <p class="pt sub" style="margin-top:14px">Tabelbreedte</p>${seg("tw",[[100,"100%"],[75,"75%"],[50,"50%"]],d.tw||100)}
+      <p class="pt sub" style="margin-top:14px">Kolombreedtes (%)</p><div class="btns" style="align-items:center">${w.map((x,i)=>`<input type="number" min="5" max="95" step="1" data-bw="${i}" value="${Math.round(x)}" aria-label="Breedte kolom ${i+1}" style="width:58px;height:38px;border:1px solid var(--line2);border-radius:8px;padding:0 6px;font:13px Inter,system-ui,sans-serif">`).join("")}<button class="tool" type="button" data-brc="even">Gelijk</button></div>
+      <p class="pt sub" style="margin-top:14px">Rijhoogte</p>${seg("pad",[["s","Compact"],["m","Normaal"],["l","Ruim"]],d.pad||"m")}
+      <p class="pt sub" style="margin-top:14px">Lijnen</p>${seg("grid",[["a","Alle"],["h","Horizontaal"],["n","Geen"]],d.grid||"h")}
+      <label class="tg" style="margin-top:8px;min-height:38px;font-size:13px"><input type="checkbox" data-btog="header"${d.header?" checked":""}><span class="track"></span>Kopregel (eerste rij)</label>
+      <label class="tg" style="min-height:38px;font-size:13px"><input type="checkbox" data-btog="zebra"${d.zebra?" checked":""}><span class="track"></span>Zebra-strepen</label>`;
+  }
   if(b.kind==="agenda"||b.kind==="news") h+=`<p class="pt sub" style="margin-top:14px">Regels (${d.items.length})</p><div class="btns"><button class="tool" type="button" data-brow="add">+ Regel</button><button class="tool" type="button" data-brow="del"${d.items.length<2?" disabled":""}>− Laatste regel</button></div>`;
   h+=`<label class="tg" style="margin-top:10px;min-height:38px;font-size:13px"><input type="checkbox" id="bToc"${b.inToc?" checked":""}><span class="track"></span>In inhoudsopgave</label>`;
   if(b.inToc) h+=`<input type="text" id="bTocL" value="${esc(b.toc||"")}" placeholder="Naam in de inhoudsopgave">`;
-  h+=`<p class="pt sub" style="margin-top:14px">Kleuren</p><div class="chips">${Object.entries(k.roles).filter(([r])=>!(b.kind==="quote"&&b.variant!=="B"&&r==="onAccent")&&!(b.kind==="agenda"&&b.variant!=="A"&&r==="tileText")).map(([r,l])=>chip("b:"+r,l,b.colors[r])).join("")}</div>`;
+  h+=`<p class="pt sub" style="margin-top:14px">Kleuren</p><div class="chips">${Object.entries(k.roles).filter(([r])=>!(b.kind==="quote"&&b.variant!=="B"&&r==="onAccent")&&!(b.kind==="agenda"&&b.variant!=="A"&&r==="tileText")&&!(b.kind==="table"&&((r==="stripe"&&!d.zebra)||((r==="head"||r==="headText")&&!d.header)||(r==="line"&&d.grid==="n")))).map(([r,l])=>chip("b:"+r,l,b.colors[r])).join("")}</div>`;
   h+=`<div class="btns" style="margin-top:14px"><button class="tool icon" type="button" data-a="up" aria-label="Blok omhoog">↑</button><button class="tool icon" type="button" data-a="down" aria-label="Blok omlaag">↓</button><button class="tool" type="button" data-a="dup">Dupliceren</button><button class="tool" type="button" data-a="del" style="color:var(--danger)">Verwijderen</button></div>`;
   h+=`<button class="tool wide" type="button" id="bSaveStd" style="margin-top:10px">Opslaan als standaardblok</button>`;
   $("#pBlk").innerHTML=h;
@@ -1180,7 +1214,10 @@ $("#pBlk").addEventListener("input",e=>{ const b=curBlock(); if(!b) return; cons
   if(t.dataset.bpath){ snapTyping(); setPath(b.data,t.dataset.bpath,t.value.trim()); save(); if(/^cols\.\d\.url$/.test(t.dataset.bpath)) refreshBlock() }
   if(t.id==="bTocL"){ snapTyping(); b.toc=t.value; $$(`.toc a[data-go="${active.lang}${active.i}"]`).forEach(x=>x.textContent=t.value); save() }
 });
-$("#pBlk").addEventListener("change",e=>{ const b=curBlock(); if(!b) return; if(e.target.id==="bToc"){ snap(); b.inToc=e.target.checked; if(b.inToc && !b.toc) b.toc=b.data.title||BK[b.kind].name; syncPair(b); const o=pairOf(b); if(o&&o.inToc&&!o.toc) o.toc=o.data.title||BK[o.kind].name; render(); save() } });
+$("#pBlk").addEventListener("change",e=>{ const b=curBlock(); if(!b) return;
+  if(e.target.dataset.btog){ snap(); b.data[e.target.dataset.btog]=e.target.checked; syncPair(b); render(); save(); return }
+  if(e.target.dataset.bw!==undefined){ snap(); const d=b.data, w=tWidths(d), i=+e.target.dataset.bw, v=Math.max(5,Math.min(95,+e.target.value||0));
+    const rest=w.reduce((a,x,k)=>k===i?a:a+x,0)||1; d.widths=w.map((x,k)=>k===i?v:Math.round(x/rest*(100-v)*10)/10); syncPair(b); render(); save(); return } if(e.target.id==="bToc"){ snap(); b.inToc=e.target.checked; if(b.inToc && !b.toc) b.toc=b.data.title||BK[b.kind].name; syncPair(b); const o=pairOf(b); if(o&&o.inToc&&!o.toc) o.toc=o.data.title||BK[o.kind].name; render(); save() } });
 $("#pBlk").addEventListener("click",async e=>{
   const b=curBlock();
   if(b && e.target.closest("#goPair")){ e.preventDefault(); const o=pairOf(b), ol=otherLang(active.lang); if(o){ const j=S[ol].indexOf(o), el=document.getElementById(ol+j); if(el){ setActive(el); el.scrollIntoView({behavior:"smooth",block:"center"}) } } return }
@@ -1188,6 +1225,14 @@ $("#pBlk").addEventListener("click",async e=>{
   const t=e.target.closest("button"); if(!b||!t) return;
   if(t.dataset.bvar){ snap(); b.variant=t.dataset.bvar; syncPair(b); render(); save(); return }
   if(t.dataset.bcount){ snap(); b.data.count=+t.dataset.bcount; syncPair(b); render(); save(); return }
+  if(t.dataset.bset){ const [k,v]=t.dataset.bset.split(":"); snap(); b.data[k]=k==="tw"?+v:v; syncPair(b); render(); save(); return }
+  if(t.dataset.brc){ const d=b.data, op=t.dataset.brc; snap();
+    if(op==="row+") d.rows.push(d.rows[0].map(()=>""));
+    if(op==="row-" && d.rows.length>1) d.rows.pop();
+    if(op==="col+" && d.rows[0].length<6){ d.rows.forEach((r,ri)=>r.push(ri===0&&d.header?(active.lang==="en"?"Column ":"Kolom ")+(r.length+1):"")); const n=d.rows[0].length; d.widths=Array(n).fill(Math.round(1000/n)/10) }
+    if(op==="col-" && d.rows[0].length>1){ d.rows.forEach(r=>r.pop()); const n=d.rows[0].length; d.widths=tWidths(d) }
+    if(op==="even"){ const n=d.rows[0].length; d.widths=Array(n).fill(Math.round(1000/n)/10) }
+    syncPair(b); render(); save(); return }
   if(t.dataset.chip){ const role=t.dataset.chip.slice(2); openPal(t,b.colors[role],c=>{ snap(); b.colors[role]=c; syncPair(b); render(); save() }); return }
   if(t.dataset.brow){ snap(); if(t.dataset.brow==="add"){ const last=b.data.items[b.data.items.length-1]; b.data.items.push(structuredClone(last)) } else b.data.items.pop(); syncPair(b); render(); save(); return }
   if(t.dataset.bimg){ pickImage(src=>{ snap(); setPath(b.data,t.dataset.bimg,src); syncPair(b); render(); save() }); return }
@@ -1266,6 +1311,11 @@ function blockMail(b,lang,i){
   }
   if(b.kind==="news"){
     h+=head(d.title)+tbl(d.items.map((it,k)=>`<tr><td style="${T(15,null,23)} padding: 12px 0; border-top: 1px solid #E5E0DC;${k===d.items.length-1?" border-bottom: 1px solid #E5E0DC;":""}"><strong style="font-weight: bold;">${esc(it.title)}</strong> &#8212; ${inlineRich(it.text,c.accent)}</td></tr>`).join(""));
+  }
+  if(b.kind==="table"){
+    const w=tWidths(d), tw=d.tw||100;
+    h+=(d.title?head(d.title,24,32):anchor)+`<table width="${tw}%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="width: ${tw}%; border-collapse: collapse;">`
+      +d.rows.map((r,ri)=>`<tr>${r.map((cell,ci)=>{ const t=tCell(d,c,ri,ci); return `<td width="${w[ci]}%" valign="top"${t.bg?` bgcolor="${t.bg}"`:""} style="width: ${w[ci]}%; padding: ${t.P}px ${t.P+3}px; ${t.bd}${t.bg?` background-color: ${t.bg};`:""} ${txt(15,t.col,22)}${t.hd?" font-weight: bold;":""}">${inlineRich(cell,t.hd?c.headText:c.accent)||"&nbsp;"}</td>` }).join("")}</tr>`).join("")+`</table>`;
   }
   if(b.kind==="colofon"){
     h+=anchor+`<p style="${T(13,null,18,"margin: 0; text-align: center;")}">${inlineRich(d.text,c.accent)}</p>`;
