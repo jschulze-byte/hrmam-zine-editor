@@ -243,7 +243,7 @@ dialog::backdrop{background:rgba(16,24,40,.4)}
   <div class="logo" aria-hidden="true">Z</div>
   <div class="ttl">
     <b id="hTitle">HRMAM-zine</b>
-    <small><span class="dot" id="dot"></span><span id="savedTxt">opgeslagen</span><span class="ver">editor v10-11 #22</span></small>
+    <small><span class="dot" id="dot"></span><span id="savedTxt">opgeslagen</span><span class="ver">editor v10-11 #23</span></small>
   </div>
   <div class="sp"></div>
   <button class="tool icon" id="undoBtn" type="button" aria-label="Ongedaan maken (Ctrl+Z)" title="Ongedaan maken (Ctrl+Z)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 010 10h-3"/></svg></button>
@@ -1013,6 +1013,9 @@ const isBlock=a=>!!a&&a.type==="block";
 const isArt=a=>!!a&&a.type!=="block";
 const TPAD={s:5,m:9,l:14};
 // lettergrootte en vet per blok: kop (hs, hb), tekst (ts), accenten zoals namen/agenda-titels/kopregel (eb)
+// datumblokje agenda: getal (ds/db) en maand (ms/mb/mu); blokje 64px, groeit mee als het niet past
+function tileTypo(b){ const t=b.typo||{}, ds=+t.ds||24, ms=+t.ms||12, tot=ds+2+ms+2, pt=Math.max(4,Math.floor((64-tot)/2));
+  return {ds,ms,db:t.db!==false,mb:!!t.mb,mu:t.mu!==false,pt,pb:Math.max(4,64-tot-pt)} }
 function typo(b){ const t=b.typo||{}; return {h:{s:.82,m:1,l:1.2}[t.hs||"m"], t:{s:.87,m:1,l:1.14}[t.ts||"m"], hb:!!t.hb, eb:t.eb!==false} }
 const tWidths=d=>{ const n=d.rows[0]?d.rows[0].length:1; let w=(d.widths||[]).slice(0,n); while(w.length<n) w.push(100/n); const t=w.reduce((a,b)=>a+(+b||0),0)||1; return w.map(x=>Math.round((+x||0)/t*1000)/10) };
 function tCell(d,c,ri,ci,last){ const hd=d.header&&ri===0, P=TPAD[d.pad||"m"], L=c.line;
@@ -1060,7 +1063,7 @@ const setPath=(o,p,v)=>{ const ks=p.split("."), last=ks.pop(); const t=ks.reduce
 const ef=(path,val,opts={})=>{ const tag=opts.block?"div":"span", plainF=!opts.rich;
   return `<${tag} class="bf" contenteditable ${plainF?"data-plain":""} data-bp="${path}" data-ph="${esc(opts.ph||"")}" style="${opts.style||""}">${plainF?esc(val||""):(val||"")}</${tag}>` };
 function blockHTML(lang,b,i){
-  const F=typo(b),H=n=>Math.round(n*F.h),X=n=>Math.round(n*F.t),HW=F.hb?"bold":"normal",EW=F.eb?"bold":"normal";
+  const TT=tileTypo(b), F=typo(b),H=n=>Math.round(n*F.h),X=n=>Math.round(n*F.t),HW=F.hb?"bold":"normal",EW=F.eb?"bold":"normal";
   const on=active&&active.lang===lang&&active.i===i, c=b.colors, d=b.data, en=lang==="en";
   let inner="";
   if(b.kind==="button"){
@@ -1072,7 +1075,7 @@ function blockHTML(lang,b,i){
   if(b.kind==="agenda"){
     inner=ef("title",d.title,{block:1,ph:"Kop",style:`font-size:${H(28)}px;line-height:${H(40)}px;font-weight:${HW};color:${c.accent};margin-bottom:14px`});
     inner+=d.items.map((it,k)=> b.variant==="A"
-      ? `<div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:14px"><div style="flex:0 0 64px;height:64px;background:${c.accent};color:${c.tileText};display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:bold">${ef(`items.${k}.d`,it.d,{ph:"12",style:`font-size:24px;line-height:26px`})}${ef(`items.${k}.m`,it.m,{ph:"nov",style:`font-size:12px;line-height:14px;text-transform:uppercase;font-weight:normal`})}</div><div style="font-size:${X(15)}px;line-height:${X(23)}px;flex:1">${ef(`items.${k}.title`,it.title,{block:1,ph:"Wat",style:`font-weight:${EW}`})}${ef(`items.${k}.info`,it.info,{rich:1,block:1,ph:"Tijd · plaats · link"})}</div></div>`
+      ? `<div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:14px"><div style="flex:0 0 64px;min-height:64px;box-sizing:border-box;padding:4px 0;background:${c.accent};color:${c.tileText};display:flex;flex-direction:column;align-items:center;justify-content:center">${ef(`items.${k}.d`,it.d,{ph:"12",style:`font-size:${TT.ds}px;line-height:${TT.ds+2}px;font-weight:${TT.db?"bold":"normal"}`})}${ef(`items.${k}.m`,it.m,{ph:"nov",style:`font-size:${TT.ms}px;line-height:${TT.ms+2}px;font-weight:${TT.mb?"bold":"normal"};${TT.mu?"text-transform:uppercase":""}`})}</div><div style="font-size:${X(15)}px;line-height:${X(23)}px;flex:1">${ef(`items.${k}.title`,it.title,{block:1,ph:"Wat",style:`font-weight:${EW}`})}${ef(`items.${k}.info`,it.info,{rich:1,block:1,ph:"Tijd · plaats · link"})}</div></div>`
       : `<div style="display:flex;gap:18px;padding:12px 0;border-top:1px solid #E5E0DC;${k===d.items.length-1?"border-bottom:1px solid #E5E0DC;":""}font-size:${X(15)}px;line-height:${X(23)}px"><span style="flex:0 0 110px;font-weight:${EW};color:${c.accent}">${ef(`items.${k}.wd`,it.wd,{ph:"di"})} ${ef(`items.${k}.d`,it.d,{ph:"12"})} ${ef(`items.${k}.m`,it.m,{ph:"nov"})}</span><div style="flex:1">${ef(`items.${k}.title`,it.title,{block:1,ph:"Wat",style:`font-weight:${EW}`})}${ef(`items.${k}.info`,it.info,{rich:1,block:1,ph:"Tijd · plaats · link"})}</div></div>`).join("");
   }
   if(b.kind==="quote"){
@@ -1210,6 +1213,10 @@ function panelBlock(b){
   { const t=b.typo||{}, seg=(k,cur)=>`<div class="btns">${[["s","Klein"],["m","Normaal"],["l","Groot"]].map(([v,n])=>`<button class="tool${(cur||"m")===v?" on":""}" type="button" data-bty="${k}:${v}">${n}</button>`).join("")}</div>`;
     const EMPH={button:"knoptekst",agenda:"titels van de afspraken en datums",quote:"naam",contact:"naam en titels",alert:"kop",news:"koppen van de berichten",cols:"“Lees meer”-links",table:"kopregel",colofon:"vetgedrukte tekst"}[b.kind]||"accenten";
     h+=`<p class="pt sub" style="margin-top:14px">Lettertype in dit blok</p>`;
+    if(b.kind==="agenda" && b.variant==="A"){ const TT=tileTypo(b), sel=(k,cur)=>`<select data-bts="${k}" aria-label="Lettergrootte" style="height:38px;border:1px solid var(--line2);border-radius:8px;padding:0 8px;font:13px Inter,system-ui,sans-serif;background:#fff">${[10,11,12,13,14,16,18,20,22,24,28,32].map(n=>`<option value="${n}"${n===cur?" selected":""}>${n} px</option>`).join("")}</select>`;
+      h+=`<div class="small" style="margin-bottom:4px">Datumblok · getal</div><div class="btns" style="align-items:center">${sel("ds",TT.ds)}<label class="tg" style="min-height:38px;font-size:13px"><input type="checkbox" data-btyt="db"${TT.db?" checked":""}><span class="track"></span>Vet</label></div>
+        <div class="small" style="margin:6px 0 4px">Datumblok · maand</div><div class="btns" style="align-items:center">${sel("ms",TT.ms)}<label class="tg" style="min-height:38px;font-size:13px"><input type="checkbox" data-btyt="mb"${TT.mb?" checked":""}><span class="track"></span>Vet</label><label class="tg" style="min-height:38px;font-size:13px"><input type="checkbox" data-btyt="mu"${TT.mu?" checked":""}><span class="track"></span>HOOFDLETTERS</label></div>
+        <button class="tool" type="button" id="bTileSame" style="margin:6px 0 10px">Maand in dezelfde stijl als getal</button>`; }
     if(b.kind!=="colofon") h+=`<div class="small" style="margin-bottom:4px">Kopgrootte</div>${seg("hs",t.hs)}<label class="tg" style="min-height:38px;font-size:13px"><input type="checkbox" data-btyt="hb"${t.hb?" checked":""}><span class="track"></span>Kop vetgedrukt</label>`;
     h+=`<div class="small" style="margin:4px 0">Tekstgrootte</div>${seg("ts",t.ts)}<label class="tg" style="min-height:38px;font-size:13px"><input type="checkbox" data-btyt="eb"${t.eb!==false?" checked":""}><span class="track"></span>Vetgedrukt: ${EMPH}</label>`; }
   h+=`<p class="pt sub" style="margin-top:14px">Kleuren</p><div class="chips">${Object.entries(k.roles).filter(([r])=>!(b.kind==="quote"&&b.variant!=="B"&&r==="onAccent")&&!(b.kind==="agenda"&&b.variant!=="A"&&r==="tileText")&&!(b.kind==="table"&&((r==="stripe"&&!d.zebra)||((r==="head"||r==="headText")&&!d.header)||(r==="line"&&d.grid==="n")))).map(([r,l])=>chip("b:"+r,l,b.colors[r])).join("")}</div>`;
@@ -1226,6 +1233,7 @@ $("#pBlk").addEventListener("input",e=>{ const b=curBlock(); if(!b) return; cons
     $$(`.toc a[data-go="${active.lang}${active.i}"]`).forEach(x=>x.textContent=t.value); save() }
 });
 $("#pBlk").addEventListener("change",e=>{ const b=curBlock(); if(!b) return;
+  if(e.target.dataset.bts){ snap(); b.typo={...(b.typo||{}),[e.target.dataset.bts]:+e.target.value}; syncPair(b); render(); save(); return }
   if(e.target.dataset.btyt){ snap(); b.typo={...(b.typo||{}),[e.target.dataset.btyt]:e.target.checked}; syncPair(b); render(); save(); return }
   if(e.target.dataset.btog){ snap(); b.data[e.target.dataset.btog]=e.target.checked; syncPair(b); render(); save(); return }
   if(e.target.dataset.bw!==undefined){ snap(); const d=b.data, w=tWidths(d), i=+e.target.dataset.bw, v=Math.max(5,Math.min(95,+e.target.value||0));
@@ -1237,6 +1245,7 @@ $("#pBlk").addEventListener("click",async e=>{
   const t=e.target.closest("button"); if(!b||!t) return;
   if(t.dataset.bvar){ snap(); b.variant=t.dataset.bvar; syncPair(b); render(); save(); return }
   if(t.dataset.bcount){ snap(); b.data.count=+t.dataset.bcount; syncPair(b); render(); save(); return }
+  if(t.id==="bTileSame"){ const TT=tileTypo(b); snap(); b.typo={...(b.typo||{}),ms:TT.ds,mb:TT.db}; syncPair(b); render(); save(); return }
   if(t.dataset.bty){ const [k,v]=t.dataset.bty.split(":"); snap(); b.typo={...(b.typo||{}),[k]:v}; syncPair(b); render(); save(); return }
   if(t.dataset.bset){ const [k,v]=t.dataset.bset.split(":"); snap(); b.data[k]=k==="tw"?+v:v; syncPair(b); render(); save(); return }
   if(t.dataset.brc){ const d=b.data, op=t.dataset.brc; snap();
@@ -1298,7 +1307,7 @@ function btnHTML(v,bg,fg,label,url,blockBg){
   return `<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse: separate;"><tr><td bgcolor="${bg}" style="background-color: ${bg}; border-radius: 4px; padding: 12px 22px;"><a href="${url}" target="_blank" data-btndone="1" style="${txt(15,fg,20)} font-weight: bold; text-decoration: none;"><span style="${txt(15,fg,20)} font-weight: bold;">${label}</span></a></td></tr></table>`;
 }
 function blockMail(b,lang,i){
-  const F=typo(b),H=n=>Math.round(n*F.h),X=n=>Math.round(n*F.t),HW=F.hb?"bold":"normal",EW=F.eb?"bold":"normal";
+  const TT=tileTypo(b), F=typo(b),H=n=>Math.round(n*F.h),X=n=>Math.round(n*F.t),HW=F.hb?"bold":"normal",EW=F.eb?"bold":"normal";
   const c=b.colors, d=b.data, anchor=`<a name="${lang}-artikel-${i+1}" id="${lang}-artikel-${i+1}"></a>`, T=(s,col,lh,x="")=>txt(s,col||c.text,lh,x);
   const head=(t,size=28,lh=40)=>t?`<p style="${T(H(size),c.accent,H(lh),`margin: 0 0 14px 0; font-weight: ${HW};`)}">${anchor}<span style="${T(H(size),c.accent,H(lh))} font-weight: ${HW};">${esc(t)}</span></p>`:anchor;
   const tbl=(inner,x="")=>`<table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="width: 100%; border-collapse: collapse;${x}">${inner}</table>`;
@@ -1309,7 +1318,7 @@ function blockMail(b,lang,i){
   }
   if(b.kind==="agenda"){
     h+=head(d.title);
-    if(b.variant==="A") h+=tbl(d.items.map(it=>`<tr><td width="64" valign="top" style="width: 64px; padding: 0 16px 14px 0;"><table width="64" cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse: collapse;"><tr><td width="64" align="center" valign="top" bgcolor="${c.accent}" style="width: 64px; background-color: ${c.accent}; padding: 12px 0 0 0; font-size: 24px; line-height: 26px; mso-line-height-rule: exactly; ${OF} color: ${c.tileText}; font-weight: bold;">${esc(it.d)}</td></tr><tr><td width="64" align="center" valign="top" bgcolor="${c.accent}" style="width: 64px; background-color: ${c.accent}; padding: 0 0 12px 0; font-size: 12px; line-height: 14px; mso-line-height-rule: exactly; ${OF} color: ${c.tileText}; text-transform: uppercase;">${esc(it.m)}</td></tr></table></td><td valign="top" style="${T(X(15),null,X(23))} padding: 0 0 14px 0;"><strong style="font-weight: ${EW};">${esc(it.title)}</strong><br>${inlineRich(it.info,c.accent)}</td></tr>`).join(""));
+    if(b.variant==="A") h+=tbl(d.items.map(it=>`<tr><td width="64" valign="top" style="width: 64px; padding: 0 16px 14px 0;"><table width="64" cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse: collapse;"><tr><td width="64" align="center" valign="top" bgcolor="${c.accent}" style="width: 64px; background-color: ${c.accent}; padding: ${TT.pt}px 0 0 0; font-size: ${TT.ds}px; line-height: ${TT.ds+2}px; mso-line-height-rule: exactly; ${OF} color: ${c.tileText}; font-weight: ${TT.db?"bold":"normal"};">${esc(it.d)}</td></tr><tr><td width="64" align="center" valign="top" bgcolor="${c.accent}" style="width: 64px; background-color: ${c.accent}; padding: 0 0 ${TT.pb}px 0; font-size: ${TT.ms}px; line-height: ${TT.ms+2}px; mso-line-height-rule: exactly; ${OF} color: ${c.tileText}; ${TT.mu?"text-transform: uppercase; ":""}font-weight: ${TT.mb?"bold":"normal"};">${esc(it.m)}</td></tr></table></td><td valign="top" style="${T(X(15),null,X(23))} padding: 0 0 14px 0;"><strong style="font-weight: ${EW};">${esc(it.title)}</strong><br>${inlineRich(it.info,c.accent)}</td></tr>`).join(""));
     else h+=tbl(d.items.map((it,k)=>`<tr><td width="120" valign="top" style="width: 120px; ${T(X(15),c.accent,X(23))} font-weight: ${EW}; padding: 12px 18px 12px 0; border-top: 1px solid #E5E0DC;${k===d.items.length-1?" border-bottom: 1px solid #E5E0DC;":""}">${esc([it.wd,it.d,it.m].filter(Boolean).join(" "))}</td><td valign="top" style="${T(X(15),null,X(23))} padding: 12px 0; border-top: 1px solid #E5E0DC;${k===d.items.length-1?" border-bottom: 1px solid #E5E0DC;":""}"><strong style="font-weight: ${EW};">${esc(it.title)}</strong><br>${inlineRich(it.info,c.accent)}</td></tr>`).join(""));
   }
   if(b.kind==="quote"){
