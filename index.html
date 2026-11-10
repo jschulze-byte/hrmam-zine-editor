@@ -243,7 +243,7 @@ dialog::backdrop{background:rgba(16,24,40,.4)}
   <div class="logo" aria-hidden="true">Z</div>
   <div class="ttl">
     <b id="hTitle">HRMAM-zine</b>
-    <small><span class="dot" id="dot"></span><span id="savedTxt">opgeslagen</span><span class="ver">editor v10-11 #20</span></small>
+    <small><span class="dot" id="dot"></span><span id="savedTxt">opgeslagen</span><span class="ver">editor v10-11 #22</span></small>
   </div>
   <div class="sp"></div>
   <button class="tool icon" id="undoBtn" type="button" aria-label="Ongedaan maken (Ctrl+Z)" title="Ongedaan maken (Ctrl+Z)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 010 10h-3"/></svg></button>
@@ -1012,6 +1012,8 @@ $("#brandBtn").onclick=showBrand;
 const isBlock=a=>!!a&&a.type==="block";
 const isArt=a=>!!a&&a.type!=="block";
 const TPAD={s:5,m:9,l:14};
+// lettergrootte en vet per blok: kop (hs, hb), tekst (ts), accenten zoals namen/agenda-titels/kopregel (eb)
+function typo(b){ const t=b.typo||{}; return {h:{s:.82,m:1,l:1.2}[t.hs||"m"], t:{s:.87,m:1,l:1.14}[t.ts||"m"], hb:!!t.hb, eb:t.eb!==false} }
 const tWidths=d=>{ const n=d.rows[0]?d.rows[0].length:1; let w=(d.widths||[]).slice(0,n); while(w.length<n) w.push(100/n); const t=w.reduce((a,b)=>a+(+b||0),0)||1; return w.map(x=>Math.round((+x||0)/t*1000)/10) };
 function tCell(d,c,ri,ci,last){ const hd=d.header&&ri===0, P=TPAD[d.pad||"m"], L=c.line;
   const bd=d.grid==="a"?`border:1px solid ${L};`:d.grid==="h"?`border-bottom:1px solid ${L};${ri===0?`border-top:1px solid ${L};`:""}`:"";
@@ -1058,49 +1060,50 @@ const setPath=(o,p,v)=>{ const ks=p.split("."), last=ks.pop(); const t=ks.reduce
 const ef=(path,val,opts={})=>{ const tag=opts.block?"div":"span", plainF=!opts.rich;
   return `<${tag} class="bf" contenteditable ${plainF?"data-plain":""} data-bp="${path}" data-ph="${esc(opts.ph||"")}" style="${opts.style||""}">${plainF?esc(val||""):(val||"")}</${tag}>` };
 function blockHTML(lang,b,i){
+  const F=typo(b),H=n=>Math.round(n*F.h),X=n=>Math.round(n*F.t),HW=F.hb?"bold":"normal",EW=F.eb?"bold":"normal";
   const on=active&&active.lang===lang&&active.i===i, c=b.colors, d=b.data, en=lang==="en";
   let inner="";
   if(b.kind==="button"){
     const btn=b.variant==="B"?`border:2px solid ${c.btnBg};background:transparent;color:${c.btnBg};padding:10px 20px`:b.variant==="C"?`display:block;text-align:center;background:${c.btnBg};color:${c.btnText};padding:14px 20px`:`background:${c.btnBg};color:${c.btnText};padding:12px 22px`;
-    inner=`${ef("title",d.title,{block:1,ph:en?"Titel (optioneel)":"Titel (optioneel)",style:`font-size:24px;line-height:32px;color:${c.accent};margin-bottom:10px`})}
-      ${ef("text",d.text,{rich:1,block:1,ph:"Tekst boven de knop (optioneel)",style:"margin-bottom:16px"})}
-      <div><span style="display:${b.variant==="C"?"block":"inline-block"};font-weight:bold;font-size:15px;border-radius:${b.variant==="C"?0:4}px;${btn}">${ef("label",d.label,{ph:"Knoptekst"})}${b.variant==="C"?" ›":""}</span></div>`;
+    inner=`${ef("title",d.title,{block:1,ph:en?"Titel (optioneel)":"Titel (optioneel)",style:`font-size:${H(24)}px;line-height:${H(32)}px;font-weight:${HW};color:${c.accent};margin-bottom:10px`})}
+      ${ef("text",d.text,{rich:1,block:1,ph:"Tekst boven de knop (optioneel)",style:`margin-bottom:16px`})}
+      <div><span style="display:${b.variant==="C"?"block":"inline-block"};font-weight:${EW};font-size:${X(15)}px;border-radius:${b.variant==="C"?0:4}px;${btn}">${ef("label",d.label,{ph:"Knoptekst"})}${b.variant==="C"?" ›":""}</span></div>`;
   }
   if(b.kind==="agenda"){
-    inner=ef("title",d.title,{block:1,ph:"Kop",style:`font-size:28px;line-height:40px;color:${c.accent};margin-bottom:14px`});
+    inner=ef("title",d.title,{block:1,ph:"Kop",style:`font-size:${H(28)}px;line-height:${H(40)}px;font-weight:${HW};color:${c.accent};margin-bottom:14px`});
     inner+=d.items.map((it,k)=> b.variant==="A"
-      ? `<div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:14px"><div style="flex:0 0 64px;height:64px;background:${c.accent};color:${c.tileText};display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:bold">${ef(`items.${k}.d`,it.d,{ph:"12",style:"font-size:24px;line-height:26px"})}${ef(`items.${k}.m`,it.m,{ph:"nov",style:"font-size:12px;line-height:14px;text-transform:uppercase;font-weight:normal"})}</div><div style="font-size:15px;line-height:23px;flex:1">${ef(`items.${k}.title`,it.title,{block:1,ph:"Wat",style:"font-weight:bold"})}${ef(`items.${k}.info`,it.info,{rich:1,block:1,ph:"Tijd · plaats · link"})}</div></div>`
-      : `<div style="display:flex;gap:18px;padding:12px 0;border-top:1px solid #E5E0DC;${k===d.items.length-1?"border-bottom:1px solid #E5E0DC;":""}font-size:15px;line-height:23px"><span style="flex:0 0 110px;font-weight:bold;color:${c.accent}">${ef(`items.${k}.wd`,it.wd,{ph:"di"})} ${ef(`items.${k}.d`,it.d,{ph:"12"})} ${ef(`items.${k}.m`,it.m,{ph:"nov"})}</span><div style="flex:1">${ef(`items.${k}.title`,it.title,{block:1,ph:"Wat",style:"font-weight:bold"})}${ef(`items.${k}.info`,it.info,{rich:1,block:1,ph:"Tijd · plaats · link"})}</div></div>`).join("");
+      ? `<div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:14px"><div style="flex:0 0 64px;height:64px;background:${c.accent};color:${c.tileText};display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:bold">${ef(`items.${k}.d`,it.d,{ph:"12",style:`font-size:24px;line-height:26px`})}${ef(`items.${k}.m`,it.m,{ph:"nov",style:`font-size:12px;line-height:14px;text-transform:uppercase;font-weight:normal`})}</div><div style="font-size:${X(15)}px;line-height:${X(23)}px;flex:1">${ef(`items.${k}.title`,it.title,{block:1,ph:"Wat",style:`font-weight:${EW}`})}${ef(`items.${k}.info`,it.info,{rich:1,block:1,ph:"Tijd · plaats · link"})}</div></div>`
+      : `<div style="display:flex;gap:18px;padding:12px 0;border-top:1px solid #E5E0DC;${k===d.items.length-1?"border-bottom:1px solid #E5E0DC;":""}font-size:${X(15)}px;line-height:${X(23)}px"><span style="flex:0 0 110px;font-weight:${EW};color:${c.accent}">${ef(`items.${k}.wd`,it.wd,{ph:"di"})} ${ef(`items.${k}.d`,it.d,{ph:"12"})} ${ef(`items.${k}.m`,it.m,{ph:"nov"})}</span><div style="flex:1">${ef(`items.${k}.title`,it.title,{block:1,ph:"Wat",style:`font-weight:${EW}`})}${ef(`items.${k}.info`,it.info,{rich:1,block:1,ph:"Tijd · plaats · link"})}</div></div>`).join("");
   }
   if(b.kind==="quote"){
     inner= b.variant==="B"
-      ? `<div style="background:${c.accent};color:${c.onAccent};--a:${c.onAccent};padding:28px 30px">${ef("text",d.text,{rich:1,block:1,ph:"Citaat",style:"font-size:20px;line-height:30px;font-style:italic;margin-bottom:12px"})}<div style="font-size:14px;line-height:20px">${ef("name",d.name,{ph:"Naam"})}, ${ef("role",d.role,{ph:"Functie"})}</div></div>`
-      : `<div style="padding:5px 20px"><div style="font-family:Georgia,serif;font-size:64px;line-height:40px;color:${c.accent}">“</div>${ef("text",d.text,{rich:1,block:1,ph:"Citaat",style:"font-size:22px;line-height:33px;margin-bottom:14px"})}<div style="font-size:14px;line-height:20px;opacity:.85"><strong>${ef("name",d.name,{ph:"Naam"})}</strong> · ${ef("role",d.role,{ph:"Functie"})}</div></div>`;
+      ? `<div style="background:${c.accent};color:${c.onAccent};--a:${c.onAccent};padding:28px 30px">${ef("text",d.text,{rich:1,block:1,ph:"Citaat",style:`font-size:${H(20)}px;line-height:${H(30)}px;font-weight:${HW};font-style:italic;margin-bottom:12px`})}<div style="font-size:${X(14)}px;line-height:${X(20)}px">${ef("name",d.name,{ph:"Naam"})}, ${ef("role",d.role,{ph:"Functie"})}</div></div>`
+      : `<div style="padding:5px 20px"><div style="font-family:Georgia,serif;font-size:64px;line-height:40px;color:${c.accent}">“</div>${ef("text",d.text,{rich:1,block:1,ph:"Citaat",style:`font-size:${H(22)}px;line-height:${H(33)}px;font-weight:${HW};margin-bottom:14px`})}<div style="font-size:${X(14)}px;line-height:${X(20)}px;opacity:.85"><strong>${ef("name",d.name,{ph:"Naam"})}</strong> · ${ef("role",d.role,{ph:"Functie"})}</div></div>`;
   }
   if(b.kind==="contact"){
     inner= b.variant==="B"
-      ? `<div class="two">${d.cols.slice(0,d.count===1?1:2).map((cl,k)=>`<div style="flex:1 1 50%;padding:6px ${k||d.count===1?0:16}px 6px ${k?16:0}px;${k?"border-left:1px solid #E5E0DC;":""}font-size:15px;line-height:23px">${ef(`cols.${k}.title`,cl.title,{block:1,ph:"Titel",style:`font-weight:bold;color:${c.accent};margin-bottom:4px`})}${ef(`cols.${k}.text`,cl.text,{rich:1,block:1,ph:"Gegevens"})}</div>`).join("")}</div>`
+      ? `<div class="two">${d.cols.slice(0,d.count===1?1:2).map((cl,k)=>`<div style="flex:1 1 50%;padding:6px ${k||d.count===1?0:16}px 6px ${k?16:0}px;${k?"border-left:1px solid #E5E0DC;":""}font-size:${X(15)}px;line-height:${X(23)}px">${ef(`cols.${k}.title`,cl.title,{block:1,ph:"Titel",style:`font-weight:${EW};color:${c.accent};margin-bottom:4px`})}${ef(`cols.${k}.text`,cl.text,{rich:1,block:1,ph:"Gegevens"})}</div>`).join("")}</div>`
       : `<div style="display:flex;gap:20px;align-items:center">${d.photo?`<img src="${esc(d.photo)}" alt="" style="flex:0 0 96px;width:96px;height:96px;border-radius:50%;object-fit:cover">`:`<div style="flex:0 0 96px;height:96px;border-radius:50%;background:#E1DDD9;display:flex;align-items:center;justify-content:center;font:500 11px Inter,system-ui,sans-serif;color:#5B6673;text-align:center">geen foto<br>(optioneel)</div>`}
-         <div style="font-size:15px;line-height:23px">${ef("label",d.label,{block:1,ph:"Kopregel",style:"font-size:14px;line-height:20px;font-weight:bold;opacity:.85"})}${ef("name",d.name,{block:1,ph:"Naam",style:"font-size:18px;line-height:26px;font-weight:bold"})}${ef("role",d.role,{block:1,ph:"Functie"})}<div><span style="color:${c.accent};text-decoration:underline">${ef("mail",d.mail,{ph:"e-mail"})}</span> · ${ef("phone",d.phone,{ph:"telefoon"})}</div></div></div>`;
+         <div style="font-size:${X(15)}px;line-height:${X(23)}px">${ef("label",d.label,{block:1,ph:"Kopregel",style:`font-size:${X(14)}px;line-height:${X(20)}px;font-weight:${EW};opacity:.85`})}${ef("name",d.name,{block:1,ph:"Naam",style:`font-size:${H(18)}px;line-height:${H(26)}px;font-weight:${HW};font-weight:${EW}`})}${ef("role",d.role,{block:1,ph:"Functie"})}<div><span style="color:${c.accent};text-decoration:underline">${ef("mail",d.mail,{ph:"e-mail"})}</span> · ${ef("phone",d.phone,{ph:"telefoon"})}</div></div></div>`;
   }
   if(b.kind==="alert"){
-    inner=`<div style="background:${c.box};padding:18px 20px;display:flex;gap:14px;align-items:flex-start"><div style="flex:0 0 32px;height:32px;border-radius:50%;background:${c.accent};color:#fff;font-weight:bold;font-size:18px;display:flex;align-items:center;justify-content:center">!</div><div style="font-size:15px;line-height:23px;flex:1">${ef("title",d.title,{block:1,ph:"Kop",style:`font-weight:bold;color:${c.accent};margin-bottom:4px`})}${ef("text",d.text,{rich:1,block:1,ph:"Tekst"})}</div></div>`;
+    inner=`<div style="background:${c.box};padding:18px 20px;display:flex;gap:14px;align-items:flex-start"><div style="flex:0 0 32px;height:32px;border-radius:50%;background:${c.accent};color:#fff;font-weight:${EW};font-size:18px;display:flex;align-items:center;justify-content:center">!</div><div style="font-size:${X(15)}px;line-height:${X(23)}px;flex:1">${ef("title",d.title,{block:1,ph:"Kop",style:`font-weight:${EW};color:${c.accent};margin-bottom:4px`})}${ef("text",d.text,{rich:1,block:1,ph:"Tekst"})}</div></div>`;
   }
   if(b.kind==="news"){
-    inner=ef("title",d.title,{block:1,ph:"Kop",style:`font-size:28px;line-height:40px;color:${c.accent};margin-bottom:14px`})
-      +d.items.map((it,k)=>`<div style="padding:12px 0;border-top:1px solid #E5E0DC;${k===d.items.length-1?"border-bottom:1px solid #E5E0DC;":""}font-size:15px;line-height:23px">${ef(`items.${k}.title`,it.title,{ph:"Kop",style:"font-weight:bold"})} — ${ef(`items.${k}.text`,it.text,{rich:1,ph:"Tekst met eventueel een link"})}</div>`).join("");
+    inner=ef("title",d.title,{block:1,ph:"Kop",style:`font-size:${H(28)}px;line-height:${H(40)}px;font-weight:${HW};color:${c.accent};margin-bottom:14px`})
+      +d.items.map((it,k)=>`<div style="padding:12px 0;border-top:1px solid #E5E0DC;${k===d.items.length-1?"border-bottom:1px solid #E5E0DC;":""}font-size:${X(15)}px;line-height:${X(23)}px">${ef(`items.${k}.title`,it.title,{ph:"Kop",style:`font-weight:${EW}`})} — ${ef(`items.${k}.text`,it.text,{rich:1,ph:"Tekst met eventueel een link"})}</div>`).join("");
   }
   if(b.kind==="table"){
     const w=tWidths(d);
-    inner=ef("title",d.title,{block:1,ph:"Titel (optioneel)",style:`font-size:24px;line-height:32px;color:${c.accent};margin-bottom:12px`})
-      +`<div style="width:${d.tw||100}%;overflow-x:auto"><table class="tt" style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup>${w.map(x=>`<col style="width:${x}%">`).join("")}</colgroup>${d.rows.map((r,ri)=>`<tr>${r.map((cell,ci)=>{ const t=tCell(d,c,ri,ci); return `<td style="padding:${t.P}px ${t.P+3}px;${t.bd}${t.bg?`background:${t.bg};`:""}color:${t.col};vertical-align:top;font-size:15px;line-height:22px;${t.hd?"font-weight:bold;":""}--a:${t.hd?c.headText:c.accent}">${ef(`rows.${ri}.${ci}`,cell,{rich:1,block:1,ph:t.hd?"Kop":"…"})}</td>` }).join("")}</tr>`).join("")}</table></div>`;
+    inner=ef("title",d.title,{block:1,ph:"Titel (optioneel)",style:`font-size:${H(24)}px;line-height:${H(32)}px;font-weight:${HW};color:${c.accent};margin-bottom:12px`})
+      +`<div style="width:${d.tw||100}%;overflow-x:auto"><table class="tt" style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup>${w.map(x=>`<col style="width:${x}%">`).join("")}</colgroup>${d.rows.map((r,ri)=>`<tr>${r.map((cell,ci)=>{ const t=tCell(d,c,ri,ci); return `<td style="padding:${t.P}px ${t.P+3}px;${t.bd}${t.bg?`background:${t.bg};`:""}color:${t.col};vertical-align:top;font-size:${X(15)}px;line-height:${X(22)}px;${t.hd?"font-weight:${EW};":""}--a:${t.hd?c.headText:c.accent}">${ef(`rows.${ri}.${ci}`,cell,{rich:1,block:1,ph:t.hd?"Kop":"…"})}</td>` }).join("")}</tr>`).join("")}</table></div>`;
   }
   if(b.kind==="colofon"){
-    inner=ef("text",d.text,{rich:1,block:1,ph:"Colofon-tekst",style:"font-size:13px;line-height:18px;text-align:center"});
+    inner=ef("text",d.text,{rich:1,block:1,ph:"Colofon-tekst",style:`font-size:${X(13)}px;line-height:${X(18)}px;text-align:center`});
   }
   if(b.kind==="cols"){
     inner=`<div class="two" style="gap:20px">${d.cols.map((cl,k)=>{ const ac=k?c.accent2:c.accent; return `<div style="flex:1 1 0;display:flex;flex-direction:column;gap:8px;min-width:0;--a:${ac}">${cl.img?`<img src="${esc(cl.img)}" alt="" style="width:100%;height:auto;display:block">`:`<div style="height:120px;background:#E1DDD9;display:flex;align-items:center;justify-content:center;font:500 11px Inter,system-ui,sans-serif;color:#5B6673">foto (optioneel)</div>`}
-      ${ef(`cols.${k}.title`,cl.title,{block:1,ph:"Titel",style:`font-size:20px;line-height:28px;color:${ac}`})}${ef(`cols.${k}.text`,cl.text,{rich:1,block:1,ph:"Tekst",style:"font-size:15px;line-height:23px"})}${cl.url?`<div style="font-size:15px;font-weight:bold;color:${ac}">${ef(`cols.${k}.link`,cl.link,{ph:"Lees meer ›"})}</div>`:""}</div>` }).join("")}</div>`;
+      ${ef(`cols.${k}.title`,cl.title,{block:1,ph:"Titel",style:`font-size:${H(20)}px;line-height:${H(28)}px;font-weight:${HW};color:${ac}`})}${ef(`cols.${k}.text`,cl.text,{rich:1,block:1,ph:"Tekst",style:`font-size:${X(15)}px;line-height:${X(23)}px`})}${cl.url?`<div style="font-size:15px;font-weight:${EW};color:${ac}">${ef(`cols.${k}.link`,cl.link,{ph:"Lees meer ›"})}</div>`:""}</div>` }).join("")}</div>`;
   }
   return `<div class="blk bx${on?" active":""}" lang="${lang}" spellcheck="false" id="${lang}${i}" data-lang="${lang}" data-i="${i}" style="background:${c.bg};color:${c.text};--a:${c.accent}"><span class="bxtag">${BK[b.kind].name}${b.variant&&BK[b.kind].variants?" · "+BK[b.kind].variants[b.variant]:""}</span>${inner}</div>`;
 }
@@ -1129,7 +1132,7 @@ const pairOf=b=>{ if(!b||!b.pair) return null; const l=S.nl.includes(b)?"en":"nl
 // tegenhanger in de andere taal: zelfde stijl, kleuren en foto's; teksten in die taal
 function counterpart(b,lang){
   const o=newBlock(b.kind,lang);
-  o.variant=b.variant; o.colors={...b.colors}; o.inToc=b.inToc;
+  o.variant=b.variant; o.colors={...b.colors}; o.inToc=b.inToc; if(b.typo) o.typo={...b.typo};
   if(b.kind==="contact"){ o.data.count=b.data.count; o.data.photo=b.data.photo; o.data.mail=b.data.mail; o.data.phone=b.data.phone; o.data.name=b.data.name }
   if(b.kind==="cols") o.data.cols.forEach((c,k)=>{ c.img=b.data.cols[k].img; c.url=b.data.cols[k].url });
   if(b.kind==="table"){ const D=b.data, O=structuredClone(D), en=lang==="en";
@@ -1160,7 +1163,7 @@ function insertBlock(b,other){
 }
 // stijl (variant, kleuren, foto's, aantal) gelijk houden met de andere taal
 function syncPair(b){ const o=pairOf(b); if(!o) return; const c=counterpart(b,"x");
-  o.variant=b.variant; o.colors={...b.colors}; o.inToc=b.inToc;
+  o.variant=b.variant; o.colors={...b.colors}; o.inToc=b.inToc; if(b.typo) o.typo={...b.typo};
   if(b.kind==="contact"){ o.data.count=b.data.count; o.data.photo=b.data.photo }
   if(b.kind==="cols") o.data.cols.forEach((cc,k)=>{ cc.img=b.data.cols[k].img });
   if(b.kind==="table"){ const D=b.data, O=o.data, nC=D.rows[0].length;
@@ -1201,8 +1204,14 @@ function panelBlock(b){
       <label class="tg" style="min-height:38px;font-size:13px"><input type="checkbox" data-btog="zebra"${d.zebra?" checked":""}><span class="track"></span>Zebra-strepen</label>`;
   }
   if(b.kind==="agenda"||b.kind==="news") h+=`<p class="pt sub" style="margin-top:14px">Regels (${d.items.length})</p><div class="btns"><button class="tool" type="button" data-brow="add">+ Regel</button><button class="tool" type="button" data-brow="del"${d.items.length<2?" disabled":""}>− Laatste regel</button></div>`;
-  h+=`<label class="tg" style="margin-top:10px;min-height:38px;font-size:13px"><input type="checkbox" id="bToc"${b.inToc?" checked":""}><span class="track"></span>In inhoudsopgave</label>`;
-  if(b.inToc) h+=`<input type="text" id="bTocL" value="${esc(b.toc||"")}" placeholder="Naam in de inhoudsopgave">`;
+  h+=`<label for="bTocL" class="small" style="display:block;margin-top:14px">Naam in inhoudsopgave</label>
+    <input type="text" id="bTocL" value="${esc(b.toc||"")}" placeholder="${esc(b.data.title||BK[b.kind].name)}" style="margin-top:6px">
+    <label class="tg" style="margin-top:4px;min-height:38px;font-size:13px"><input type="checkbox" id="bToc"${b.inToc?" checked":""}><span class="track"></span>Tonen in inhoudsopgave</label>`;
+  { const t=b.typo||{}, seg=(k,cur)=>`<div class="btns">${[["s","Klein"],["m","Normaal"],["l","Groot"]].map(([v,n])=>`<button class="tool${(cur||"m")===v?" on":""}" type="button" data-bty="${k}:${v}">${n}</button>`).join("")}</div>`;
+    const EMPH={button:"knoptekst",agenda:"titels van de afspraken en datums",quote:"naam",contact:"naam en titels",alert:"kop",news:"koppen van de berichten",cols:"“Lees meer”-links",table:"kopregel",colofon:"vetgedrukte tekst"}[b.kind]||"accenten";
+    h+=`<p class="pt sub" style="margin-top:14px">Lettertype in dit blok</p>`;
+    if(b.kind!=="colofon") h+=`<div class="small" style="margin-bottom:4px">Kopgrootte</div>${seg("hs",t.hs)}<label class="tg" style="min-height:38px;font-size:13px"><input type="checkbox" data-btyt="hb"${t.hb?" checked":""}><span class="track"></span>Kop vetgedrukt</label>`;
+    h+=`<div class="small" style="margin:4px 0">Tekstgrootte</div>${seg("ts",t.ts)}<label class="tg" style="min-height:38px;font-size:13px"><input type="checkbox" data-btyt="eb"${t.eb!==false?" checked":""}><span class="track"></span>Vetgedrukt: ${EMPH}</label>`; }
   h+=`<p class="pt sub" style="margin-top:14px">Kleuren</p><div class="chips">${Object.entries(k.roles).filter(([r])=>!(b.kind==="quote"&&b.variant!=="B"&&r==="onAccent")&&!(b.kind==="agenda"&&b.variant!=="A"&&r==="tileText")&&!(b.kind==="table"&&((r==="stripe"&&!d.zebra)||((r==="head"||r==="headText")&&!d.header)||(r==="line"&&d.grid==="n")))).map(([r,l])=>chip("b:"+r,l,b.colors[r])).join("")}</div>`;
   h+=`<div class="btns" style="margin-top:14px"><button class="tool icon" type="button" data-a="up" aria-label="Blok omhoog">↑</button><button class="tool icon" type="button" data-a="down" aria-label="Blok omlaag">↓</button><button class="tool" type="button" data-a="dup">Dupliceren</button><button class="tool" type="button" data-a="del" style="color:var(--danger)">Verwijderen</button></div>`;
   h+=`<button class="tool wide" type="button" id="bSaveStd" style="margin-top:10px">Opslaan als standaardblok</button>`;
@@ -1212,12 +1221,15 @@ function panelBlock(b){
 function curBlock(){ const a=active&&S[active.lang][active.i]; return isBlock(a)?a:null }
 $("#pBlk").addEventListener("input",e=>{ const b=curBlock(); if(!b) return; const t=e.target;
   if(t.dataset.bpath){ snapTyping(); setPath(b.data,t.dataset.bpath,t.value.trim()); save(); if(/^cols\.\d\.url$/.test(t.dataset.bpath)) refreshBlock() }
-  if(t.id==="bTocL"){ snapTyping(); b.toc=t.value; $$(`.toc a[data-go="${active.lang}${active.i}"]`).forEach(x=>x.textContent=t.value); save() }
+  if(t.id==="bTocL"){ snapTyping(); b.toc=t.value;
+    if(t.value.trim() && !b.inToc){ b.inToc=true; const cb=$("#bToc"); if(cb) cb.checked=true; const pos=t.selectionStart; render(); const n=$("#bTocL"); if(n){ n.focus(); n.setSelectionRange(pos,pos) } save(); return }
+    $$(`.toc a[data-go="${active.lang}${active.i}"]`).forEach(x=>x.textContent=t.value); save() }
 });
 $("#pBlk").addEventListener("change",e=>{ const b=curBlock(); if(!b) return;
+  if(e.target.dataset.btyt){ snap(); b.typo={...(b.typo||{}),[e.target.dataset.btyt]:e.target.checked}; syncPair(b); render(); save(); return }
   if(e.target.dataset.btog){ snap(); b.data[e.target.dataset.btog]=e.target.checked; syncPair(b); render(); save(); return }
   if(e.target.dataset.bw!==undefined){ snap(); const d=b.data, w=tWidths(d), i=+e.target.dataset.bw, v=Math.max(5,Math.min(95,+e.target.value||0));
-    const rest=w.reduce((a,x,k)=>k===i?a:a+x,0)||1; d.widths=w.map((x,k)=>k===i?v:Math.round(x/rest*(100-v)*10)/10); syncPair(b); render(); save(); return } if(e.target.id==="bToc"){ snap(); b.inToc=e.target.checked; if(b.inToc && !b.toc) b.toc=b.data.title||BK[b.kind].name; syncPair(b); const o=pairOf(b); if(o&&o.inToc&&!o.toc) o.toc=o.data.title||BK[o.kind].name; render(); save() } });
+    const rest=w.reduce((a,x,k)=>k===i?a:a+x,0)||1; d.widths=w.map((x,k)=>k===i?v:Math.round(x/rest*(100-v)*10)/10); syncPair(b); render(); save(); return } if(e.target.id==="bToc"){ snap(); b.inToc=e.target.checked; if(b.inToc && !(b.toc||"").trim()) b.toc=b.data.title||BK[b.kind].name; syncPair(b); const o=pairOf(b); if(o&&o.inToc&&!o.toc) o.toc=o.data.title||BK[o.kind].name; render(); save() } });
 $("#pBlk").addEventListener("click",async e=>{
   const b=curBlock();
   if(b && e.target.closest("#goPair")){ e.preventDefault(); const o=pairOf(b), ol=otherLang(active.lang); if(o){ const j=S[ol].indexOf(o), el=document.getElementById(ol+j); if(el){ setActive(el); el.scrollIntoView({behavior:"smooth",block:"center"}) } } return }
@@ -1225,6 +1237,7 @@ $("#pBlk").addEventListener("click",async e=>{
   const t=e.target.closest("button"); if(!b||!t) return;
   if(t.dataset.bvar){ snap(); b.variant=t.dataset.bvar; syncPair(b); render(); save(); return }
   if(t.dataset.bcount){ snap(); b.data.count=+t.dataset.bcount; syncPair(b); render(); save(); return }
+  if(t.dataset.bty){ const [k,v]=t.dataset.bty.split(":"); snap(); b.typo={...(b.typo||{}),[k]:v}; syncPair(b); render(); save(); return }
   if(t.dataset.bset){ const [k,v]=t.dataset.bset.split(":"); snap(); b.data[k]=k==="tw"?+v:v; syncPair(b); render(); save(); return }
   if(t.dataset.brc){ const d=b.data, op=t.dataset.brc; snap();
     if(op==="row+") d.rows.push(d.rows[0].map(()=>""));
@@ -1285,43 +1298,44 @@ function btnHTML(v,bg,fg,label,url,blockBg){
   return `<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse: separate;"><tr><td bgcolor="${bg}" style="background-color: ${bg}; border-radius: 4px; padding: 12px 22px;"><a href="${url}" target="_blank" data-btndone="1" style="${txt(15,fg,20)} font-weight: bold; text-decoration: none;"><span style="${txt(15,fg,20)} font-weight: bold;">${label}</span></a></td></tr></table>`;
 }
 function blockMail(b,lang,i){
+  const F=typo(b),H=n=>Math.round(n*F.h),X=n=>Math.round(n*F.t),HW=F.hb?"bold":"normal",EW=F.eb?"bold":"normal";
   const c=b.colors, d=b.data, anchor=`<a name="${lang}-artikel-${i+1}" id="${lang}-artikel-${i+1}"></a>`, T=(s,col,lh,x="")=>txt(s,col||c.text,lh,x);
-  const head=(t,size=28,lh=40)=>t?`<p style="${T(size,c.accent,lh,"margin: 0 0 14px 0; font-weight: normal;")}">${anchor}<span style="${T(size,c.accent,lh)}">${esc(t)}</span></p>`:anchor;
+  const head=(t,size=28,lh=40)=>t?`<p style="${T(H(size),c.accent,H(lh),`margin: 0 0 14px 0; font-weight: ${HW};`)}">${anchor}<span style="${T(H(size),c.accent,H(lh))} font-weight: ${HW};">${esc(t)}</span></p>`:anchor;
   const tbl=(inner,x="")=>`<table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="width: 100%; border-collapse: collapse;${x}">${inner}</table>`;
   let h="";
   if(b.kind==="button"){
-    h+=head(d.title,24,32)+(d.text?`<p style="${T(16,null,26,"margin: 0 0 16px 0;")}">${inlineRich(d.text,c.accent)}</p>`:"");
+    h+=head(d.title,24,32)+(d.text?`<p style="${T(X(16),null,X(26),"margin: 0 0 16px 0;")}">${inlineRich(d.text,c.accent)}</p>`:"");
     h+=btnHTML(b.variant||"A",c.btnBg,c.btnText,d.label,d.url,c.bg);
   }
   if(b.kind==="agenda"){
     h+=head(d.title);
-    if(b.variant==="A") h+=tbl(d.items.map(it=>`<tr><td width="64" valign="top" style="width: 64px; padding: 0 16px 14px 0;"><table width="64" cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse: collapse;"><tr><td width="64" height="64" align="center" valign="middle" bgcolor="${c.accent}" style="width: 64px; height: 64px; background-color: ${c.accent};"><span style="${txt(24,c.tileText,26)} font-weight: bold;">${esc(it.d)}</span><br><span style="${txt(12,c.tileText,14)} text-transform: uppercase;">${esc(it.m)}</span></td></tr></table></td><td valign="top" style="${T(15,null,23)} padding: 0 0 14px 0;"><strong style="font-weight: bold;">${esc(it.title)}</strong><br>${inlineRich(it.info,c.accent)}</td></tr>`).join(""));
-    else h+=tbl(d.items.map((it,k)=>`<tr><td width="120" valign="top" style="width: 120px; ${T(15,c.accent,23)} font-weight: bold; padding: 12px 18px 12px 0; border-top: 1px solid #E5E0DC;${k===d.items.length-1?" border-bottom: 1px solid #E5E0DC;":""}">${esc([it.wd,it.d,it.m].filter(Boolean).join(" "))}</td><td valign="top" style="${T(15,null,23)} padding: 12px 0; border-top: 1px solid #E5E0DC;${k===d.items.length-1?" border-bottom: 1px solid #E5E0DC;":""}"><strong style="font-weight: bold;">${esc(it.title)}</strong><br>${inlineRich(it.info,c.accent)}</td></tr>`).join(""));
+    if(b.variant==="A") h+=tbl(d.items.map(it=>`<tr><td width="64" valign="top" style="width: 64px; padding: 0 16px 14px 0;"><table width="64" cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse: collapse;"><tr><td width="64" align="center" valign="top" bgcolor="${c.accent}" style="width: 64px; background-color: ${c.accent}; padding: 12px 0 0 0; font-size: 24px; line-height: 26px; mso-line-height-rule: exactly; ${OF} color: ${c.tileText}; font-weight: bold;">${esc(it.d)}</td></tr><tr><td width="64" align="center" valign="top" bgcolor="${c.accent}" style="width: 64px; background-color: ${c.accent}; padding: 0 0 12px 0; font-size: 12px; line-height: 14px; mso-line-height-rule: exactly; ${OF} color: ${c.tileText}; text-transform: uppercase;">${esc(it.m)}</td></tr></table></td><td valign="top" style="${T(X(15),null,X(23))} padding: 0 0 14px 0;"><strong style="font-weight: ${EW};">${esc(it.title)}</strong><br>${inlineRich(it.info,c.accent)}</td></tr>`).join(""));
+    else h+=tbl(d.items.map((it,k)=>`<tr><td width="120" valign="top" style="width: 120px; ${T(X(15),c.accent,X(23))} font-weight: ${EW}; padding: 12px 18px 12px 0; border-top: 1px solid #E5E0DC;${k===d.items.length-1?" border-bottom: 1px solid #E5E0DC;":""}">${esc([it.wd,it.d,it.m].filter(Boolean).join(" "))}</td><td valign="top" style="${T(X(15),null,X(23))} padding: 12px 0; border-top: 1px solid #E5E0DC;${k===d.items.length-1?" border-bottom: 1px solid #E5E0DC;":""}"><strong style="font-weight: ${EW};">${esc(it.title)}</strong><br>${inlineRich(it.info,c.accent)}</td></tr>`).join(""));
   }
   if(b.kind==="quote"){
-    if(b.variant==="B") h+=anchor+tbl(`<tr><td bgcolor="${c.accent}" style="background-color: ${c.accent}; padding: 28px 30px;"><p style="${txt(20,c.onAccent,30,"margin: 0 0 12px 0; font-style: italic;")}">${inlineRich(d.text,c.onAccent)}</p><p style="${txt(14,c.onAccent,20,"margin: 0;")}">${esc(d.name)}${d.role?", "+esc(d.role):""}</p></td></tr>`);
-    else h+=anchor+`<p style="font-family: Georgia, serif; font-size: 64px; line-height: 40px; color: ${c.accent}; margin: 0; mso-line-height-rule: exactly;">&#8220;</p><p style="${T(22,null,33,"margin: 0 0 14px 0;")}">${inlineRich(d.text,c.accent)}</p><p style="${T(14,null,20,"margin: 0;")}"><strong style="font-weight: bold;">${esc(d.name)}</strong>${d.role?" · "+esc(d.role):""}</p>`;
+    if(b.variant==="B") h+=anchor+tbl(`<tr><td bgcolor="${c.accent}" style="background-color: ${c.accent}; padding: 28px 30px;"><p style="${txt(H(20),c.onAccent,H(30),"margin: 0 0 12px 0; font-style: italic;")}">${inlineRich(d.text,c.onAccent)}</p><p style="${txt(X(14),c.onAccent,X(20),"margin: 0;")}">${esc(d.name)}${d.role?", "+esc(d.role):""}</p></td></tr>`);
+    else h+=anchor+`<p style="font-family: Georgia, serif; font-size: 64px; line-height: 40px; color: ${c.accent}; margin: 0; mso-line-height-rule: exactly;">&#8220;</p><p style="${T(H(22),null,H(33),"margin: 0 0 14px 0;")}">${inlineRich(d.text,c.accent)}</p><p style="${T(X(14),null,X(20),"margin: 0;")}"><strong style="font-weight: ${EW};">${esc(d.name)}</strong>${d.role?" · "+esc(d.role):""}</p>`;
   }
   if(b.kind==="contact"){
-    if(b.variant==="B") h+=anchor+tbl(`<tr>${d.cols.slice(0,d.count===1?1:2).map((cl,k)=>`<td class="stack" width="${d.count===1?"100%":"50%"}" valign="top" style="width: ${d.count===1?"100%":"50%"}; ${T(15,null,23)} padding: 6px ${k||d.count===1?0:16}px 6px ${k?16:0}px;${k?" border-left: 1px solid #E5E0DC;":""}"><p style="${T(15,c.accent,23,"margin: 0 0 4px 0; font-weight: bold;")}">${esc(cl.title)}</p>${inlineRich(cl.text,c.accent)}</td>`).join("")}</tr>`);
-    else h+=anchor+tbl(`<tr>${d.photo?`<td width="96" valign="middle" style="width: 96px; padding: 0 20px 0 0;"><img src="${esc(d.photo)}" width="96" height="96" alt="${esc(d.name)}" style="display: block; width: 96px; height: 96px; border-radius: 48px; border: 0;"></td>`:""}<td valign="middle" style="${T(15,null,23)}">${d.label?`<p style="${T(14,null,20,"margin: 0 0 2px 0; font-weight: bold;")}">${esc(d.label)}</p>`:""}<p style="${T(18,null,26,"margin: 0; font-weight: bold;")}">${esc(d.name)}</p>${d.role?`<p style="${T(15,null,23,"margin: 0;")}">${esc(d.role)}</p>`:""}<p style="${T(15,null,23,"margin: 0;")}">${d.mail?`<a href="mailto:${esc(d.mail)}" style="${OF} color: ${c.accent}; text-decoration: underline;">${esc(d.mail)}</a>`:""}${d.mail&&d.phone?" · ":""}${esc(d.phone||"")}</p></td></tr>`);
+    if(b.variant==="B") h+=anchor+tbl(`<tr>${d.cols.slice(0,d.count===1?1:2).map((cl,k)=>`<td class="stack" width="${d.count===1?"100%":"50%"}" valign="top" style="width: ${d.count===1?"100%":"50%"}; ${T(X(15),null,X(23))} padding: 6px ${k||d.count===1?0:16}px 6px ${k?16:0}px;${k?" border-left: 1px solid #E5E0DC;":""}"><p style="${T(X(15),c.accent,X(23),`margin: 0 0 4px 0; font-weight: ${EW};`)}">${esc(cl.title)}</p>${inlineRich(cl.text,c.accent)}</td>`).join("")}</tr>`);
+    else h+=anchor+tbl(`<tr>${d.photo?`<td width="96" valign="middle" style="width: 96px; padding: 0 20px 0 0;"><img src="${esc(d.photo)}" width="96" height="96" alt="${esc(d.name)}" style="display: block; width: 96px; height: 96px; border-radius: 48px; border: 0;"></td>`:""}<td valign="middle" style="${T(X(15),null,X(23))}">${d.label?`<p style="${T(X(14),null,X(20),`margin: 0 0 2px 0; font-weight: ${EW};`)}">${esc(d.label)}</p>`:""}<p style="${T(H(18),null,H(26),`margin: 0; font-weight: ${EW};`)}">${esc(d.name)}</p>${d.role?`<p style="${T(X(15),null,X(23),"margin: 0;")}">${esc(d.role)}</p>`:""}<p style="${T(X(15),null,X(23),"margin: 0;")}">${d.mail?`<a href="mailto:${esc(d.mail)}" style="${OF} color: ${c.accent}; text-decoration: underline;">${esc(d.mail)}</a>`:""}${d.mail&&d.phone?" · ":""}${esc(d.phone||"")}</p></td></tr>`);
   }
   if(b.kind==="alert"){
-    h+=anchor+tbl(`<tr><td bgcolor="${c.box}" style="background-color: ${c.box}; padding: 18px 20px;">${tbl(`<tr><td width="32" valign="top" style="width: 32px; padding: 0 14px 0 0;"><table width="32" cellpadding="0" cellspacing="0" border="0" role="presentation"><tr><td width="32" height="32" align="center" valign="middle" bgcolor="${c.accent}" style="width: 32px; height: 32px; background-color: ${c.accent}; border-radius: 16px; ${txt(18,"#ffffff",32)} font-weight: bold;">!</td></tr></table></td><td valign="top" style="${T(15,null,23)}"><p style="${T(15,c.accent,23,"margin: 0 0 4px 0; font-weight: bold;")}">${esc(d.title)}</p>${inlineRich(d.text,c.accent)}</td></tr>`)}</td></tr>`);
+    h+=anchor+tbl(`<tr><td bgcolor="${c.box}" style="background-color: ${c.box}; padding: 18px 20px;">${tbl(`<tr><td width="32" valign="top" style="width: 32px; padding: 0 14px 0 0;"><table width="32" cellpadding="0" cellspacing="0" border="0" role="presentation"><tr><td width="32" height="32" align="center" valign="middle" bgcolor="${c.accent}" style="width: 32px; height: 32px; background-color: ${c.accent}; border-radius: 16px; ${txt(18,"#ffffff",32)} font-weight: ${EW};">!</td></tr></table></td><td valign="top" style="${T(X(15),null,X(23))}"><p style="${T(X(15),c.accent,X(23),`margin: 0 0 4px 0; font-weight: ${EW};`)}">${esc(d.title)}</p>${inlineRich(d.text,c.accent)}</td></tr>`)}</td></tr>`);
   }
   if(b.kind==="news"){
-    h+=head(d.title)+tbl(d.items.map((it,k)=>`<tr><td style="${T(15,null,23)} padding: 12px 0; border-top: 1px solid #E5E0DC;${k===d.items.length-1?" border-bottom: 1px solid #E5E0DC;":""}"><strong style="font-weight: bold;">${esc(it.title)}</strong> &#8212; ${inlineRich(it.text,c.accent)}</td></tr>`).join(""));
+    h+=head(d.title)+tbl(d.items.map((it,k)=>`<tr><td style="${T(X(15),null,X(23))} padding: 12px 0; border-top: 1px solid #E5E0DC;${k===d.items.length-1?" border-bottom: 1px solid #E5E0DC;":""}"><strong style="font-weight: ${EW};">${esc(it.title)}</strong> &#8212; ${inlineRich(it.text,c.accent)}</td></tr>`).join(""));
   }
   if(b.kind==="table"){
     const w=tWidths(d), tw=d.tw||100;
     h+=(d.title?head(d.title,24,32):anchor)+`<table width="${tw}%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="width: ${tw}%; border-collapse: collapse;">`
-      +d.rows.map((r,ri)=>`<tr>${r.map((cell,ci)=>{ const t=tCell(d,c,ri,ci); return `<td width="${w[ci]}%" valign="top"${t.bg?` bgcolor="${t.bg}"`:""} style="width: ${w[ci]}%; padding: ${t.P}px ${t.P+3}px; ${t.bd}${t.bg?` background-color: ${t.bg};`:""} ${txt(15,t.col,22)}${t.hd?" font-weight: bold;":""}">${inlineRich(cell,t.hd?c.headText:c.accent)||"&nbsp;"}</td>` }).join("")}</tr>`).join("")+`</table>`;
+      +d.rows.map((r,ri)=>`<tr>${r.map((cell,ci)=>{ const t=tCell(d,c,ri,ci); return `<td width="${w[ci]}%" valign="top"${t.bg?` bgcolor="${t.bg}"`:""} style="width: ${w[ci]}%; padding: ${t.P}px ${t.P+3}px; ${t.bd}${t.bg?` background-color: ${t.bg};`:""} ${txt(X(15),t.col,X(22))}${t.hd?" font-weight: ${EW};":""}">${inlineRich(cell,t.hd?c.headText:c.accent)||"&nbsp;"}</td>` }).join("")}</tr>`).join("")+`</table>`;
   }
   if(b.kind==="colofon"){
-    h+=anchor+`<p style="${T(13,null,18,"margin: 0; text-align: center;")}">${inlineRich(d.text,c.accent)}</p>`;
+    h+=anchor+`<p style="${T(X(13),null,X(18),"margin: 0; text-align: center;")}">${inlineRich(d.text,c.accent)}</p>`;
   }
   if(b.kind==="cols"){
-    h+=anchor+tbl(`<tr>${d.cols.map((cl,k)=>{ const ac=k?c.accent2:c.accent; return `<td class="stack" width="50%" valign="top" style="width: 50%; padding: 0 ${k?0:10}px 0 ${k?10:0}px;">${cl.img?`<img src="${esc(cl.img)}" width="290" alt="" style="display: block; width: 100%; max-width: 290px; height: auto; border: 0; margin: 0 0 10px 0;">`:""}<p style="${T(20,ac,28,"margin: 4px 0 8px 0;")}">${esc(cl.title)}</p><p style="${T(15,null,23,"margin: 0 0 8px 0;")}">${inlineRich(cl.text,ac)}</p>${cl.url?`<p style="${T(15,ac,23,"margin: 0;")}"><a href="${esc(cl.url)}" target="_blank" style="${OF} color: ${ac}; font-weight: bold; text-decoration: none;">${esc(cl.link||"Lees meer ›")}</a></p>`:""}</td>` }).join("")}</tr>`);
+    h+=anchor+tbl(`<tr>${d.cols.map((cl,k)=>{ const ac=k?c.accent2:c.accent; return `<td class="stack" width="50%" valign="top" style="width: 50%; padding: 0 ${k?0:10}px 0 ${k?10:0}px;">${cl.img?`<img src="${esc(cl.img)}" width="290" alt="" style="display: block; width: 100%; max-width: 290px; height: auto; border: 0; margin: 0 0 10px 0;">`:""}<p style="${T(H(20),ac,H(28),"margin: 4px 0 8px 0;")}">${esc(cl.title)}</p><p style="${T(X(15),null,X(23),"margin: 0 0 8px 0;")}">${inlineRich(cl.text,ac)}</p>${cl.url?`<p style="${T(X(15),ac,X(23),"margin: 0;")}"><a href="${esc(cl.url)}" target="_blank" style="${OF} color: ${ac}; font-weight: ${EW}; text-decoration: none;">${esc(cl.link||"Lees meer ›")}</a></p>`:""}</td>` }).join("")}</tr>`);
   }
   return {bg:c.bg, html:h};
 }
